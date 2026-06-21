@@ -18,6 +18,48 @@ Kenya · Tanzania · Zambia · 6 Corridors · 2013–2022
 
 ---
 
+---
+
+# Platform Screenshots
+
+## Executive Dashboard
+
+![Executive Dashboard](Executive%20Dashboard.png)
+
+## Corridor Explorer
+
+![Corridor Explorer](Corridor%20Explorer.png)
+
+## Market Intelligence
+
+![Market Intelligence](Market%20Intelligence.png)
+
+## Policy Simulator
+
+![Policy Simulator](Policy%20Simulator.png)
+
+## Price & MIS Forecasting
+
+![Price & MIS Forecasting](Price%20%26%20MIS%20Forcasting.png)
+
+## Risk and Early Warnings
+
+![Risk and Early Warnings](Risk%20and%20Early%20Warnings.png)
+
+## AI Recommendations
+
+![AI Recommendations](AI%20Recommendations.png)
+
+## Supply Chain Network
+
+![Supply Chain Network](Supply%20Chain%20Network.png)
+
+## Trade Network Map
+
+![Trade Network Map](Trade%20Network%20Map.png)
+
+---
+
 ## The Problem
 
 Africa's agricultural challenge is not fundamentally a production problem. It is a **coordination failure**:
@@ -335,7 +377,13 @@ If you use this work in research or institutional contexts:
 
 ## License
 
-MIT License — see [LICENSE](LICENSE)
+Copyright © 2026 Gerald T. Mazise
+
+All rights reserved.
+
+This repository and its contents may not be copied, modified,
+distributed, sublicensed, or used for commercial purposes
+without explicit written permission from the copyright holder.
 
 ---
 
