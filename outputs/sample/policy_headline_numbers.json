@@ -1,0 +1,134 @@
+{
+  "Baseline": {
+    "total_inc_vol_tonnes": 0,
+    "total_inc_value_usd": 0,
+    "total_months_unlocked": 0,
+    "corridors_activated": 0,
+    "by_corridor": {
+      "KEN\u2192TAN": {
+        "inc_vol_tonnes": 0,
+        "inc_value_usd": 0,
+        "months_unlocked": 0,
+        "mean_mis_delta": 0.0
+      },
+      "KEN\u2192ZAM": {
+        "inc_vol_tonnes": 0,
+        "inc_value_usd": 0,
+        "months_unlocked": 0,
+        "mean_mis_delta": 0.0
+      },
+      "TAN\u2192KEN": {
+        "inc_vol_tonnes": 0,
+        "inc_value_usd": 0,
+        "months_unlocked": 0,
+        "mean_mis_delta": 0.0
+      },
+      "TAN\u2192ZAM": {
+        "inc_vol_tonnes": 0,
+        "inc_value_usd": 0,
+        "months_unlocked": 0,
+        "mean_mis_delta": 0.0
+      },
+      "ZAM\u2192KEN": {
+        "inc_vol_tonnes": 0,
+        "inc_value_usd": 0,
+        "months_unlocked": 0,
+        "mean_mis_delta": 0.0
+      },
+      "ZAM\u2192TAN": {
+        "inc_vol_tonnes": 0,
+        "inc_value_usd": 0,
+        "months_unlocked": 0,
+        "mean_mis_delta": 0.0
+      }
+    }
+  },
+  "AfCFTA_Phase1": {
+    "total_inc_vol_tonnes": 9227698,
+    "total_inc_value_usd": 2815923858,
+    "total_months_unlocked": 17,
+    "corridors_activated": 3,
+    "by_corridor": {
+      "KEN\u2192TAN": {
+        "inc_vol_tonnes": 15668,
+        "inc_value_usd": 4802040,
+        "months_unlocked": 0,
+        "mean_mis_delta": -0.1115
+      },
+      "KEN\u2192ZAM": {
+        "inc_vol_tonnes": 15920,
+        "inc_value_usd": 4900740,
+        "months_unlocked": 0,
+        "mean_mis_delta": -0.0902
+      },
+      "TAN\u2192KEN": {
+        "inc_vol_tonnes": 1743748,
+        "inc_value_usd": 402592812,
+        "months_unlocked": 2,
+        "mean_mis_delta": 0.1115
+      },
+      "TAN\u2192ZAM": {
+        "inc_vol_tonnes": 2193052,
+        "inc_value_usd": 562869766,
+        "months_unlocked": 0,
+        "mean_mis_delta": -0.0742
+      },
+      "ZAM\u2192KEN": {
+        "inc_vol_tonnes": 2553222,
+        "inc_value_usd": 893627700,
+        "months_unlocked": 10,
+        "mean_mis_delta": 0.0902
+      },
+      "ZAM\u2192TAN": {
+        "inc_vol_tonnes": 2706088,
+        "inc_value_usd": 947130800,
+        "months_unlocked": 5,
+        "mean_mis_delta": 0.0742
+      }
+    }
+  },
+  "AfCFTA_Full": {
+    "total_inc_vol_tonnes": 30313594,
+    "total_inc_value_usd": 9262988000,
+    "total_months_unlocked": 62,
+    "corridors_activated": 3,
+    "by_corridor": {
+      "KEN\u2192TAN": {
+        "inc_vol_tonnes": 49948,
+        "inc_value_usd": 15309977,
+        "months_unlocked": 0,
+        "mean_mis_delta": -0.4449
+      },
+      "KEN\u2192ZAM": {
+        "inc_vol_tonnes": 52184,
+        "inc_value_usd": 16064593,
+        "months_unlocked": 0,
+        "mean_mis_delta": -0.3665
+      },
+      "TAN\u2192KEN": {
+        "inc_vol_tonnes": 5556922,
+        "inc_value_usd": 1282970359,
+        "months_unlocked": 6,
+        "mean_mis_delta": 0.4449
+      },
+      "TAN\u2192ZAM": {
+        "inc_vol_tonnes": 7289992,
+        "inc_value_usd": 1871051271,
+        "months_unlocked": 0,
+        "mean_mis_delta": -0.3046
+      },
+      "ZAM\u2192KEN": {
+        "inc_vol_tonnes": 8369156,
+        "inc_value_usd": 2929204600,
+        "months_unlocked": 36,
+        "mean_mis_delta": 0.3665
+      },
+      "ZAM\u2192TAN": {
+        "inc_vol_tonnes": 8995392,
+        "inc_value_usd": 3148387200,
+        "months_unlocked": 20,
+        "mean_mis_delta": 0.3046
+      }
+    }
+  }
+}

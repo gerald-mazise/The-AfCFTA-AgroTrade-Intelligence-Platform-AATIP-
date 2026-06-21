@@ -1,0 +1,109 @@
+{
+  "engine": "01_supply_engine",
+  "models": [
+    "RandomForestClassifier",
+    "GradientBoostingClassifier"
+  ],
+  "target": "Exporter_Surplus_Score",
+  "classes": {
+    "-1": "deficit",
+    "0": "neutral",
+    "1": "surplus"
+  },
+  "primary_model": "RandomForest (deficit recall optimised, class_weight=balanced)",
+  "priority_metric": "deficit_recall",
+  "train_years": [
+    2013,
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021
+  ],
+  "test_years": [
+    2022
+  ],
+  "n_features": 18,
+  "features": [
+    "Exporter_Supply_Shock_Z",
+    "Exporter_Supply_Index",
+    "Exporter_Production_YoY_Growth",
+    "Exporter_Net_Supply_tonnes",
+    "Exporter_Export_Intensity",
+    "Exporter_Rainfall_Anomaly_Z",
+    "Exporter_Drought_Index",
+    "Exporter_Climate_Risk_Score",
+    "Exporter_Precip_3M",
+    "Exporter_Heat_Stress",
+    "Exporter_Is_Harvest_Month",
+    "Exporter_Post_Harvest_3M",
+    "Exporter_Pre_Harvest_Scarcity",
+    "Exporter_Price_Zscore",
+    "Exporter_Seasonal_Price_Dev",
+    "Exporter_Price_Vol_6M",
+    "Exporter_Yield_hg_ha",
+    "Exporter_Area_ha"
+  ],
+  "cv_rf": {
+    "mean": 0.6294,
+    "std": 0.3063,
+    "folds": [
+      0.875,
+      0.0833,
+      0.5833,
+      0.6471,
+      0.9583
+    ],
+    "scoring": "deficit_recall"
+  },
+  "cv_gb": {
+    "mean": 0.5814,
+    "std": 0.1492,
+    "folds": [
+      0.4286,
+      0.4279,
+      0.8322,
+      0.6086,
+      0.6098
+    ],
+    "scoring": "f1_macro"
+  },
+  "test_metrics": {
+    "rf_macro_f1": 1.0,
+    "gb_macro_f1": 0.4706,
+    "rf_deficit_recall": 1.0,
+    "gb_deficit_recall": 0.8889
+  },
+  "top_features": {
+    "Exporter_Production_YoY_Growth": 0.23928,
+    "Exporter_Supply_Shock_Z": 0.16048,
+    "Exporter_Net_Supply_tonnes": 0.1418,
+    "Exporter_Supply_Index": 0.13195,
+    "Exporter_Yield_hg_ha": 0.0939,
+    "Exporter_Export_Intensity": 0.08014,
+    "Exporter_Area_ha": 0.06888,
+    "Exporter_Price_Zscore": 0.02509,
+    "Exporter_Seasonal_Price_Dev": 0.02201,
+    "Exporter_Price_Vol_6M": 0.01785,
+    "Exporter_Precip_3M": 0.00765,
+    "Exporter_Rainfall_Anomaly_Z": 0.00597,
+    "Exporter_Pre_Harvest_Scarcity": 0.00176,
+    "Exporter_Post_Harvest_3M": 0.00142,
+    "Exporter_Is_Harvest_Month": 0.00088,
+    "Exporter_Drought_Index": 0.00055,
+    "Exporter_Climate_Risk_Score": 0.00041,
+    "Exporter_Heat_Stress": 0.0
+  },
+  "assumptions": [
+    "class_weight=balanced: corrects for class imbalance without oversampling",
+    "Imputation: column medians from train set applied to all data",
+    "GB label remap: -1\u21920, 0\u21921, 1\u21922 (GradBoost requires non-negative int labels)"
+  ],
+  "caveats": [
+    "Exporter_Surplus_Score is a pre-engineered composite, not raw production data",
+    "Climate features at country level \u2014 sub-national variation not captured"
+  ]
+}

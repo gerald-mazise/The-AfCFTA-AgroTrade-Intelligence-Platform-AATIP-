@@ -1,0 +1,23 @@
+{
+  "engine": "04_informal_trade_engine",
+  "architecture": "rule_trigger \u2192 IsolationForest_anomaly \u2192 probability \u2192 volume",
+  "probability_weights": {
+    "P_MIS": 0.4,
+    "P_Persistence": 0.3,
+    "P_Anomaly": 0.3
+  },
+  "anomaly_detection": {
+    "model": "IsolationForest",
+    "contamination": 0.15
+  },
+  "unctad_calibration": {
+    "source": "UNCTAD EAC staple grain benchmark",
+    "ratio_range": "2.0\u00d7 \u2013 4.0\u00d7 formal"
+  },
+  "caveats": [
+    "ALL volume estimates are INFERRED \u2014 not measured, not observed",
+    "P_Informal is a probabilistic signal, not a classification",
+    "UNCTAD calibration applies to EAC staple grains specifically",
+    "Anomaly score is relative to this dataset \u2014 not an absolute benchmark"
+  ]
+}

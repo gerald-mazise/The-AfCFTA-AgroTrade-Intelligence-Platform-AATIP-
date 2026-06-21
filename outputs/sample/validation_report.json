@@ -1,0 +1,240 @@
+{
+  "engine": "06_validation_econometrics",
+  "econometrics": {
+    "cointegration": [
+      {
+        "Pair_ID": "KEN\u2192TAN",
+        "n": 71,
+        "ols_r2": 0.4803,
+        "adf_t": -2.5806,
+        "adf_p_approx": 0.012,
+        "cointegrated": false,
+        "status": "not_cointegrated",
+        "note": NaN
+      },
+      {
+        "Pair_ID": "KEN\u2192ZAM",
+        "n": 0,
+        "ols_r2": NaN,
+        "adf_t": NaN,
+        "adf_p_approx": NaN,
+        "cointegrated": null,
+        "status": NaN,
+        "note": "insufficient_obs"
+      },
+      {
+        "Pair_ID": "TAN\u2192KEN",
+        "n": 71,
+        "ols_r2": 0.4803,
+        "adf_t": -3.2559,
+        "adf_p_approx": 0.0018,
+        "cointegrated": true,
+        "status": "COINTEGRATED",
+        "note": NaN
+      },
+      {
+        "Pair_ID": "TAN\u2192ZAM",
+        "n": 0,
+        "ols_r2": NaN,
+        "adf_t": NaN,
+        "adf_p_approx": NaN,
+        "cointegrated": null,
+        "status": NaN,
+        "note": "insufficient_obs"
+      },
+      {
+        "Pair_ID": "ZAM\u2192KEN",
+        "n": 0,
+        "ols_r2": NaN,
+        "adf_t": NaN,
+        "adf_p_approx": NaN,
+        "cointegrated": null,
+        "status": NaN,
+        "note": "insufficient_obs"
+      },
+      {
+        "Pair_ID": "ZAM\u2192TAN",
+        "n": 0,
+        "ols_r2": NaN,
+        "adf_t": NaN,
+        "adf_p_approx": NaN,
+        "cointegrated": null,
+        "status": NaN,
+        "note": "insufficient_obs"
+      }
+    ],
+    "granger": [
+      {
+        "Pair_ID": "KEN\u2192TAN",
+        "granger_F": 0.9101,
+        "granger_p": 0.4415,
+        "lag_tested": 3.0,
+        "causal": false,
+        "status": "not_causal",
+        "note": NaN
+      },
+      {
+        "Pair_ID": "KEN\u2192ZAM",
+        "granger_F": NaN,
+        "granger_p": NaN,
+        "lag_tested": NaN,
+        "causal": NaN,
+        "status": NaN,
+        "note": "insufficient_obs"
+      },
+      {
+        "Pair_ID": "TAN\u2192KEN",
+        "granger_F": 5.4098,
+        "granger_p": 0.002292,
+        "lag_tested": 3.0,
+        "causal": true,
+        "status": "GRANGER_CAUSAL",
+        "note": NaN
+      },
+      {
+        "Pair_ID": "TAN\u2192ZAM",
+        "granger_F": NaN,
+        "granger_p": NaN,
+        "lag_tested": NaN,
+        "causal": NaN,
+        "status": NaN,
+        "note": "insufficient_obs"
+      },
+      {
+        "Pair_ID": "ZAM\u2192KEN",
+        "granger_F": NaN,
+        "granger_p": NaN,
+        "lag_tested": NaN,
+        "causal": NaN,
+        "status": NaN,
+        "note": "insufficient_obs"
+      },
+      {
+        "Pair_ID": "ZAM\u2192TAN",
+        "granger_F": NaN,
+        "granger_p": NaN,
+        "lag_tested": NaN,
+        "causal": NaN,
+        "status": NaN,
+        "note": "insufficient_obs"
+      }
+    ],
+    "transmission_beta": [
+      {
+        "Pair_ID": "KEN\u2192TAN",
+        "beta": 0.282,
+        "r2": 0.1466,
+        "beta_p": 0.001069,
+        "n": 70,
+        "interpretation": "partial_transmission"
+      },
+      {
+        "Pair_ID": "TAN\u2192KEN",
+        "beta": 0.5199,
+        "r2": 0.1466,
+        "beta_p": 0.001069,
+        "n": 70,
+        "interpretation": "partial_transmission"
+      }
+    ],
+    "ecm_residuals": [
+      {
+        "Pair_ID": "KEN\u2192TAN",
+        "n_ecm": 39,
+        "ecm_mean": -0.0371,
+        "ecm_std": 0.0694,
+        "adf_t": -3.068,
+        "adf_p_approx": 0.0041,
+        "ecm_stationary": true,
+        "half_life_M": 1.72,
+        "above_hl_ceiling": false,
+        "status": "VALID"
+      },
+      {
+        "Pair_ID": "KEN\u2192ZAM",
+        "n_ecm": 77,
+        "ecm_mean": -0.0018,
+        "ecm_std": 0.0443,
+        "adf_t": -3.0132,
+        "adf_p_approx": 0.0035,
+        "ecm_stationary": true,
+        "half_life_M": 2.8,
+        "above_hl_ceiling": false,
+        "status": "VALID"
+      },
+      {
+        "Pair_ID": "TAN\u2192KEN",
+        "n_ecm": 39,
+        "ecm_mean": -0.0065,
+        "ecm_std": 0.0656,
+        "adf_t": -5.2025,
+        "adf_p_approx": 0.0,
+        "ecm_stationary": true,
+        "half_life_M": 0.79,
+        "above_hl_ceiling": false,
+        "status": "VALID"
+      },
+      {
+        "Pair_ID": "TAN\u2192ZAM",
+        "n_ecm": 45,
+        "ecm_mean": 0.0109,
+        "ecm_std": 0.0433,
+        "adf_t": -2.0326,
+        "adf_p_approx": 0.0484,
+        "ecm_stationary": false,
+        "half_life_M": 3.82,
+        "above_hl_ceiling": false,
+        "status": "WARN_NOT_STATIONARY"
+      },
+      {
+        "Pair_ID": "ZAM\u2192KEN",
+        "n_ecm": 77,
+        "ecm_mean": -0.0193,
+        "ecm_std": 0.0795,
+        "adf_t": -5.7466,
+        "adf_p_approx": 0.0,
+        "ecm_stationary": true,
+        "half_life_M": 1.13,
+        "above_hl_ceiling": false,
+        "status": "VALID"
+      },
+      {
+        "Pair_ID": "ZAM\u2192TAN",
+        "n_ecm": 45,
+        "ecm_mean": -0.0349,
+        "ecm_std": 0.0647,
+        "adf_t": -2.0069,
+        "adf_p_approx": 0.0512,
+        "ecm_stationary": false,
+        "half_life_M": 4.46,
+        "above_hl_ceiling": false,
+        "status": "WARN_NOT_STATIONARY"
+      }
+    ]
+  },
+  "model_predictions": {
+    "01_supply": {
+      "context": "Engine01_Test",
+      "macro_f1": 1.0,
+      "classes": {
+        "deficit": {
+          "label_value": -1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 18
+        }
+      }
+    },
+    "03_trade_ranking": {
+      "spearman_rho": 0.7722,
+      "p_value": 1e-05,
+      "n": 24,
+      "context": "Engine03_Test"
+    }
+  },
+  "significance_levels": {
+    "cointegration": 0.05,
+    "granger": 0.05
+  }
+}

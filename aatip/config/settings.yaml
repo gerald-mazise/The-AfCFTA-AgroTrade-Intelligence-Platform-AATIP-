@@ -1,0 +1,154 @@
+# =============================================================================
+# AATIP — AfCFTA AgroTrade Intelligence Platform
+# config/settings.yaml  |  Single source of truth — all parameters
+# =============================================================================
+# Philosophy: every threshold, split year, weight, and scenario parameter
+# lives here. Changing behaviour means editing YAML, not hunting through code.
+
+# ---[ DATA ]------------------------------------------------------------------
+data:
+  master_csv:       "AATIP_Intelligence_Master_144_Feature_Claude.csv"
+  raw_prices_csv:   "AATIP_RAW_MASTER_FINAL_CLAUDE_REFINED_8_APRIL_2AM.csv"
+  predictions_dir:  "outputs/predictions"
+  artifacts_dir:    "outputs/model_artifacts"
+  reports_dir:      "outputs/reports"
+
+# ---[ TEMPORAL SPLITS ]-------------------------------------------------------
+# Reality: KEN↔ZAM corridors have 2013-2015; all 6 corridors full from 2016.
+# 2022 is partial (2-8 months per corridor). 2023 only 2 rows — excluded.
+# Strategy: include everything through 2021 as training (maximise history),
+# 2022 as held-out test (simulates real deployment on sparse recent data).
+temporal:
+  train_years:   [2013,2014,2015,2016,2017,2018,2019,2020,2021]
+  test_years:    [2022]
+  exclude_years: [2023]
+  full_years:    [2016,2017,2018,2019,2020,2021]
+  cv_n_splits:   5
+  forecast_horizon_months: 6
+
+# ---[ CORRIDORS ]-------------------------------------------------------------
+corridors:
+  all: ["KEN→TAN","KEN→ZAM","TAN→KEN","TAN→ZAM","ZAM→KEN","ZAM→TAN"]
+  countries: ["Kenya","Tanzania","Zambia"]
+  afcfta_priority: ["ZAM→KEN","TAN→KEN","ZAM→TAN"]
+
+# Country coordinates (for dashboard map)
+country_coords:
+  Kenya:    {lat: -1.286,  lon: 36.817}
+  Tanzania: {lat: -6.369,  lon: 34.889}
+  Zambia:   {lat: -13.134, lon: 27.849}
+
+# ---[ MIS THRESHOLDS ]-------------------------------------------------------
+# MIS = (Price_Partner - Price_Local - Transport_Cost) / Transport_Cost
+# The central intelligence metric — not just a feature.
+mis:
+  arbitrage_threshold:         0.0   # MIS > 0  → trade is economically viable
+  strong_arbitrage:            0.5   # MIS > 0.5 → strong signal
+  convergence_threshold:      -0.2   # MIS < -0.2 → efficiently converged
+  crisis_threshold:            1.5   # MIS > 1.5 → structural market failure
+  persistence_months:          3     # MIS > 0 for N months → structural, not noise
+  valid_range:               [-5.0, 3.0]
+
+# ---[ ENGINE 01 — SUPPLY & DEFICIT CLASSIFIER ]------------------------------
+supply_engine:
+  target:            "Exporter_Surplus_Score"   # values: -1, 0, 1
+  priority_class:    -1                          # deficit recall is the key metric
+  # Random Forest
+  rf_n_estimators:   200
+  rf_max_depth:      6
+  rf_min_samples_leaf: 5
+  # Gradient Boosting
+  gb_n_estimators:   150
+  gb_max_depth:      3
+  gb_learning_rate:  0.05
+  # Threshold for deficit probability to trigger early-warning flag
+  deficit_prob_threshold: 0.45
+
+# ---[ ENGINE 02 — MARKET DYNAMICS ]------------------------------------------
+market_dynamics:
+  target_exporter: "Exporter_Price_Wholesale_USD_kg"
+  target_importer: "Importer_Price_Wholesale_USD_kg"
+  # AR model order (manual ARIMA substitute)
+  ar_lags:         [1, 2, 3, 6, 12]
+  # Gradient Boosting regressor
+  gb_n_estimators: 200
+  gb_max_depth:    4
+  gb_learning_rate: 0.05
+  gb_min_samples_leaf: 5
+  # CI multiplier (±N * rolling_std)
+  ci_multiplier:   1.64   # 90% interval
+  forecast_horizon: 6
+
+# ---[ ENGINE 03 — TRADE MATCHING ]-------------------------------------------
+# Hierarchy (FIXED ORDER — not co-equal):
+#   Layer 1: Economic composite (theory-grounded floor)
+#   Layer 2: Lasso ML refinement (optimises ranking)
+#   Layer 3: Hard rule gates (feasibility override)
+trade_matching:
+  # Economic composite weights (World Bank trade-cost elasticity literature)
+  w_mis_ma3:          0.35
+  w_supply_confidence: 0.30
+  w_route_feasibility: 0.20
+  w_market_friction:  0.15    # subtracted
+  # Lasso
+  lasso_n_alphas:     50
+  lasso_max_iter:     5000
+  lasso_target:       "Exporter_Export_tonnes"
+  # Hard gates
+  min_route_feasibility:  0.30
+  max_market_friction:    0.80
+  # Output
+  top_n_corridors:    3
+
+# ---[ ENGINE 04 — INFORMAL TRADE ]-------------------------------------------
+informal_trade:
+  mis_trigger:           0.0    # MIS must be positive to trigger
+  formal_intensity_max:  0.05   # formal intensity below this = suppressed formal trade
+  w_mis:                 0.40
+  w_persistence:         0.30
+  w_anomaly:             0.30
+  isolation_contamination: 0.15
+  high_confidence:       0.60   # P_informal above this = high-confidence flag
+  # UNCTAD EAC benchmark: informal ≈ 2–4× formal for staple grains
+  unctad_ratio_low:      2.0
+  unctad_ratio_high:     4.0
+
+# ---[ ENGINE 05 — POLICY SIMULATION ]----------------------------------------
+policy_simulation:
+  elasticity_base:  2.0      # % trade increase per 1% logistics cost reduction
+  elasticity_min:   1.0
+  elasticity_max:   3.5
+  elasticity_steps: 6
+  scenarios:
+    Baseline:
+      border_reduction:    0.00
+      transport_reduction: 0.00
+      description: "No intervention — current state"
+    AfCFTA_Phase1:
+      border_reduction:    0.20
+      transport_reduction: 0.00
+      description: "Single-window customs (AU 2027 interim target)"
+    AfCFTA_Full:
+      border_reduction:    0.50
+      transport_reduction: 0.10
+      description: "Full AfCFTA implementation (AU 2035 target)"
+
+# ---[ ENGINE 06 — VALIDATION & ECONOMETRICS ]--------------------------------
+validation:
+  cointegration_min_obs:   30     # minimum obs required for Engle-Granger
+  cointegration_sig:        0.05
+  granger_max_lags:         6
+  granger_sig:              0.05
+  ecm_stationarity_sig:     0.05
+  half_life_ceiling_months: 24    # above this → very slow mean reversion
+  # Performance thresholds (used for PASS/FAIL governance flags)
+  min_deficit_recall:    0.65
+  min_macro_f1:          0.50
+  max_price_mape:        0.20
+  min_rank_spearman:     0.35
+
+# ---[ DASHBOARD ]------------------------------------------------------------
+dashboard:
+  title:           "AATIP — AfCFTA AgroTrade Intelligence Platform"
+  default_corridor: "ZAM→KEN"
+  map_center:      {lat: -5.0, lon: 28.0}

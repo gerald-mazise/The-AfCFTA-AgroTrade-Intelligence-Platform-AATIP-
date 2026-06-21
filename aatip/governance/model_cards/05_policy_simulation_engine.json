@@ -1,0 +1,32 @@
+{
+  "engine": "05_policy_simulation_engine",
+  "scenarios": {
+    "Baseline": "No intervention \u2014 current state",
+    "AfCFTA_Phase1": "Single-window customs (AU 2027 interim target)",
+    "AfCFTA_Full": "Full AfCFTA implementation (AU 2035 target)"
+  },
+  "base_elasticity": 2.0,
+  "elasticity_range": [
+    1.0,
+    3.5
+  ],
+  "cross_validation": {
+    "Baseline": {},
+    "AfCFTA_Phase1": {
+      "corr": 1.0,
+      "mae": 2.6e-05,
+      "n": 532
+    },
+    "AfCFTA_Full": {
+      "corr": 1.0,
+      "mae": 2.5e-05,
+      "n": 532
+    }
+  },
+  "caveats": [
+    "Elasticity assumed constant \u2014 real response varies by corridor, season, commodity",
+    "Volume estimates assume current price levels (large-scale reforms change prices)",
+    "AfCFTA_Full assumes infrastructure co-investment \u2014 not guaranteed",
+    "Simulation is partial equilibrium \u2014 general equilibrium effects not modelled"
+  ]
+}

@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AATIP — AfCFTA AgroTrade Intelligence Platform</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg0:#05080D;--bg1:#0C1520;--bg2:#121E30;--bg3:#1A2840;--bg4:#213250;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--border3:rgba(255,255,255,0.2);
+  --teal:#00C9A7;--teal-d:rgba(0,201,167,0.10);--teal-m:rgba(0,201,167,0.22);
+  --amber:#F5A623;--amber-d:rgba(245,166,35,0.10);--amber-m:rgba(245,166,35,0.2);
+  --coral:#FF5252;--coral-d:rgba(255,82,82,0.10);--coral-m:rgba(255,82,82,0.2);
+  --green:#3ECF8E;--green-d:rgba(62,207,142,0.10);--green-m:rgba(62,207,142,0.2);
+  --blue:#4A9EE0;--blue-d:rgba(74,158,224,0.10);
+  --purple:#9B74E0;--purple-d:rgba(155,116,224,0.10);
+  --t0:#EDF2F8;--t1:#7A96B2;--t2:#3D5468;--t3:#1E3145;
+  --fn:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',system-ui,sans-serif;
+  --mono:'SF Mono','Fira Code','Courier New',monospace;
+  --r:10px;--rs:6px;--rl:16px;
+  --sw:228px;--hh:50px;
+}
+html,body{height:100%;font-family:var(--fn);background:var(--bg0);color:var(--t0);overflow:hidden;}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:3px;height:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px;}
+
+/* ─── LOGIN SCREEN ─── */
+#loginScreen{
+  position:fixed;inset:0;background:var(--bg0);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:1000;transition:opacity .55s ease,transform .55s ease;
+  padding-top:26px; /* offset for ticker height */
+}
+#loginScreen.out{opacity:0;transform:scale(.96);pointer-events:none;}
+.login-bg{
+  position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 55% 55% at 12% 60%,rgba(0,201,167,.08) 0%,transparent 65%),
+    radial-gradient(ellipse 45% 45% at 85% 25%,rgba(74,158,224,.06) 0%,transparent 60%),
+    radial-gradient(ellipse 40% 40% at 55% 88%,rgba(245,166,35,.04) 0%,transparent 55%);
+}
+.login-grid{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(var(--border) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:64px 64px;opacity:.35;
+}
+.login-card{
+  width:400px;background:var(--bg1);border:1px solid var(--border2);
+  border-radius:var(--rl);padding:32px 36px 28px;position:relative;z-index:1;
+  box-shadow:0 24px 72px rgba(0,0,0,.65);
+}
+/* Logo row */
+.l-logo{display:flex;align-items:center;gap:12px;margin-bottom:24px;}
+.l-logomark{
+  width:40px;height:40px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--teal),var(--blue));
+  display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;
+}
+.l-logotitle{font-size:18px;font-weight:700;letter-spacing:-.3px;line-height:1.2;}
+.l-logosub{font-size:10px;color:var(--t2);letter-spacing:.5px;text-transform:uppercase;margin-top:2px;}
+/* Heading */
+.l-h{font-size:17px;font-weight:600;margin-bottom:4px;letter-spacing:-.2px;}
+.l-sub{font-size:12px;color:var(--t1);margin-bottom:22px;line-height:1.5;}
+/* Stakeholder */
+.stake-label{font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;font-weight:600;}
+.stake-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:20px;}
+.stake-btn{
+  padding:9px 6px;border:1px solid var(--border);border-radius:var(--rs);
+  background:var(--bg2);color:var(--t1);font-size:11px;text-align:center;
+  cursor:pointer;transition:all .18s;font-family:var(--fn);line-height:1.3;
+}
+.stake-btn:hover,.stake-btn.on{border-color:var(--teal);background:var(--teal-d);color:var(--teal);}
+.stake-icon{font-size:16px;display:block;margin-bottom:4px;}
+/* Form */
+.fl{margin-bottom:12px;}
+.fl label{font-size:11.5px;color:var(--t1);display:block;margin-bottom:5px;font-weight:500;}
+.fi{
+  width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);
+  color:var(--t0);font-family:var(--fn);font-size:13.5px;padding:9px 12px;outline:none;
+  transition:border-color .18s;
+}
+.fi:focus{border-color:var(--teal);background:var(--bg3);}
+/* Button */
+.l-btn{
+  width:100%;padding:11px;background:var(--teal);border:none;border-radius:var(--rs);
+  color:#001a14;font-family:var(--fn);font-size:13.5px;font-weight:700;cursor:pointer;
+  margin-top:8px;transition:opacity .15s;letter-spacing:.1px;
+}
+.l-btn:hover{opacity:.87;}
+/* Footer */
+.l-foot{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  margin-top:16px;font-size:11px;color:var(--t2);
+}
+.l-foot a{color:var(--teal);cursor:pointer;text-decoration:none;transition:opacity .15s;}
+.l-foot a:hover{opacity:.7;}
+.l-foot-sep{color:var(--t3);}
+/* Stat pills inside card */
+.l-pills{
+  display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;
+}
+.l-pill{
+  display:flex;align-items:center;gap:5px;padding:4px 10px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:20px;
+  font-size:10.5px;color:var(--t1);
+}
+.l-pill-n{font-weight:700;font-family:var(--mono);}
+/* Bottom copyright */
+.l-bottom{
+  position:absolute;bottom:14px;font-size:10px;color:var(--t3);
+  text-align:center;z-index:1;letter-spacing:.1px;
+}
+
+/* ─── TICKER ─── */
+.ticker{
+  height:26px;background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;overflow:hidden;flex-shrink:0;
+}
+.ticker-lbl{
+  padding:0 10px;font-size:9px;font-weight:700;color:var(--t2);letter-spacing:.8px;
+  border-right:1px solid var(--border);height:100%;display:flex;align-items:center;flex-shrink:0;
+}
+.ticker-track{flex:1;overflow:hidden;}
+.ticker-inner{display:flex;gap:24px;animation:scroll 38s linear infinite;white-space:nowrap;}
+@keyframes scroll{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+.ti{display:flex;align-items:center;gap:7px;font-size:11px;}
+.ti-sym{color:var(--t2);font-weight:600;letter-spacing:.3px;font-size:10px;}
+.ti-p{color:var(--t0);font-family:var(--mono);}
+.up{color:var(--green);} .dn{color:var(--coral);}
+
+/* ─── APP SHELL ─── */
+#mainApp{display:none;height:100vh;flex-direction:column;}
+#mainApp.on{display:flex;}
+.chrome{
+  height:36px;background:var(--bg1);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 14px;gap:8px;flex-shrink:0;
+}
+.cd{width:11px;height:11px;border-radius:50%;}
+.cd-r{background:#FF5F57;} .cd-y{background:#FEBC2E;} .cd-g{background:#28C840;}
+.chrome-t{flex:1;text-align:center;font-size:12px;color:var(--t2);}
+.chrome-r{font-size:10px;color:var(--t2);display:flex;align-items:center;gap:8px;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+.app-body{display:flex;flex:1;overflow:hidden;}
+
+/* ─── SIDEBAR ─── */
+.sidebar{
+  width:var(--sw);background:var(--bg1);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;flex-shrink:0;
+}
+.sb-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.sb-mark{
+  width:32px;height:32px;border-radius:8px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--teal),var(--blue));
+  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;
+}
+.sb-name{font-size:13px;font-weight:700;}
+.sb-ver{font-size:10px;color:var(--t2);}
+.sb-sec{font-size:9px;color:var(--t2);letter-spacing:.9px;text-transform:uppercase;padding:14px 16px 5px;font-weight:600;}
+.nav{
+  display:flex;align-items:center;gap:9px;padding:7px 12px;margin:1px 7px;
+  border-radius:var(--rs);cursor:pointer;font-size:12.5px;color:var(--t1);
+  transition:all .14s;user-select:none;
+}
+.nav:hover{background:var(--bg2);color:var(--t0);}
+.nav.on{background:var(--teal-d);color:var(--teal);}
+.nav-ic{width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.n-badge{
+  margin-left:auto;background:var(--coral);color:#fff;
+  font-size:9px;padding:1px 6px;border-radius:10px;font-weight:700;
+}
+.sb-foot{margin-top:auto;padding:10px;border-top:1px solid var(--border);}
+.u-card{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:var(--rs);}
+.u-av{
+  width:30px;height:30px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--purple),var(--blue));
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;
+}
+.u-name{font-size:12px;font-weight:600;}
+.u-role{font-size:10px;color:var(--t2);}
+
+/* ─── CONTENT AREA ─── */
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg0);}
+.c-head{
+  height:var(--hh);padding:0 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;flex-shrink:0;background:var(--bg1);
+}
+.c-title{font-size:15px;font-weight:700;letter-spacing:-.2px;}
+.c-sub{font-size:11px;color:var(--t1);margin-top:1px;}
+.hr{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.pill{
+  font-size:11px;padding:4px 10px;border-radius:20px;
+  border:1px solid var(--border);color:var(--t1);cursor:pointer;
+  background:var(--bg2);transition:all .15s;
+}
+.pill:hover,.pill.on{border-color:var(--teal);color:var(--teal);background:var(--teal-d);}
+.live-l{font-size:11px;color:var(--green);display:flex;align-items:center;gap:5px;}
+
+/* ─── PAGES ─── */
+.page{display:none;flex:1;overflow-y:auto;padding:14px 18px;}
+.page.on{display:block;}
+
+/* ─── CARDS ─── */
+.card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;}
+.csm{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;}
+
+/* ─── GRIDS ─── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;}
+.row{display:flex;gap:11px;margin-bottom:11px;}
+.row>*{min-width:0;}
+.f1{flex:1;}.f2{flex:2;}.f3{flex:3;}
+.mb11{margin-bottom:11px;}.mt11{margin-top:11px;}.mt8{margin-top:8px;}
+
+/* ─── KPI CARDS ─── */
+.kpi{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;}
+.kpi-lb{font-size:10px;color:var(--t1);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;font-weight:500;}
+.kpi-v{font-size:26px;font-weight:800;letter-spacing:-.8px;line-height:1;}
+.kpi-ch{font-size:11px;margin-top:5px;}
+.pos{color:var(--green);}.neg{color:var(--coral);}.neu{color:var(--t1);}
+
+/* ─── SECTION TITLE ─── */
+.st{font-size:12.5px;font-weight:700;margin-bottom:11px;display:flex;align-items:center;justify-content:space-between;}
+.sa{font-size:11px;color:var(--teal);cursor:pointer;}
+
+/* ─── TABLE ─── */
+table.dt{width:100%;border-collapse:collapse;font-size:11.5px;}
+.dt th{font-size:10px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;padding:7px 9px;text-align:left;border-bottom:1px solid var(--border);}
+.dt td{padding:8px 9px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.dt tr:last-child td{border-bottom:none;}
+.dt tr:hover td{background:var(--bg2);}
+
+/* ─── BADGES ─── */
+.b{display:inline-flex;align-items:center;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600;letter-spacing:.2px;}
+.bg{background:var(--green-d);color:var(--green);}
+.ba{background:var(--amber-d);color:var(--amber);}
+.bc{background:var(--coral-d);color:var(--coral);}
+.bt{background:var(--teal-d);color:var(--teal);}
+.bb{background:var(--blue-d);color:var(--blue);}
+.bp{background:var(--purple-d);color:var(--purple);}
+
+/* ─── PROGRESS ─── */
+.pb{height:3px;background:var(--bg4);border-radius:2px;overflow:hidden;}
+.pf{height:100%;border-radius:2px;transition:width .5s;}
+
+/* ─── MIS BARS ─── */
+.mis-row{display:flex;align-items:center;gap:8px;margin-bottom:9px;}
+.mis-lbl{font-size:11px;color:var(--t1);width:76px;flex-shrink:0;}
+.mis-trk{flex:1;height:5px;background:var(--bg4);border-radius:3px;position:relative;}
+.mis-ctr{position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--border2);}
+.mis-fill{position:absolute;height:100%;border-radius:3px;}
+.mis-val{font-size:11px;font-family:var(--mono);width:44px;flex-shrink:0;text-align:right;}
+
+/* ─── SCORE ROWS ─── */
+.sr{display:flex;align-items:center;gap:9px;margin-bottom:7px;}
+.sr-lb{font-size:11.5px;color:var(--t1);flex:1;}
+.sr-tr{flex:2;height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;}
+.sr-fi{height:100%;border-radius:2px;}
+.sr-v{font-size:11px;font-family:var(--mono);width:32px;text-align:right;}
+
+/* ─── ALERTS ─── */
+.alert{display:flex;align-items:flex-start;gap:9px;padding:9px 11px;border-radius:var(--rs);border:1px solid;margin-bottom:7px;}
+.a-hi{border-color:rgba(255,82,82,.3);background:rgba(255,82,82,.06);}
+.a-md{border-color:rgba(245,166,35,.3);background:rgba(245,166,35,.06);}
+.a-lo{border-color:rgba(62,207,142,.3);background:rgba(62,207,142,.06);}
+.a-ic{font-size:14px;margin-top:1px;flex-shrink:0;}
+.a-title{font-size:11.5px;font-weight:700;}
+.a-body{font-size:11px;color:var(--t1);margin-top:2px;line-height:1.5;}
+.a-time{font-size:10px;color:var(--t2);margin-top:3px;}
+
+/* ─── SLIDERS ─── */
+.sl-row{margin-bottom:14px;}
+.sl-hd{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;}
+.sl-nm{color:var(--t1);}
+.sl-v{color:var(--teal);font-weight:700;font-family:var(--mono);}
+input[type=range]{
+  -webkit-appearance:none;width:100%;height:3px;
+  background:var(--bg4);border-radius:2px;outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:13px;height:13px;border-radius:50%;
+  background:var(--teal);cursor:pointer;
+}
+.sl-marks{display:flex;justify-content:space-between;font-size:9px;color:var(--t2);margin-top:3px;}
+
+/* ─── COMM PILLS ─── */
+.cp-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:11px;}
+.cp{
+  padding:4px 11px;border-radius:12px;font-size:11px;
+  border:1px solid var(--border);color:var(--t1);cursor:pointer;transition:all .14s;
+}
+.cp:hover,.cp.on{background:var(--teal-d);border-color:var(--teal);color:var(--teal);}
+
+/* ─── AI INSIGHTS ─── */
+.ai-c{padding:12px 14px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg1);margin-bottom:9px;position:relative;overflow:hidden;}
+.ai-c::before{content:'';position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:0 2px 2px 0;}
+.ai-hi::before{background:var(--coral);}
+.ai-md::before{background:var(--amber);}
+.ai-lo::before{background:var(--green);}
+.ai-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:5px;gap:8px;}
+.ai-t{font-size:12.5px;font-weight:700;line-height:1.4;}
+.ai-sc{font-size:11px;color:var(--teal);font-family:var(--mono);flex-shrink:0;margin-top:1px;}
+.ai-tx{font-size:11.5px;color:var(--t1);line-height:1.6;}
+.ai-tags{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;}
+.ai-tag{font-size:10px;padding:2px 7px;border-radius:8px;background:var(--bg3);color:var(--t2);}
+
+/* ─── MINI TABS ─── */
+.mtb{display:flex;gap:2px;background:var(--bg2);border-radius:var(--rs);padding:3px;margin-bottom:10px;}
+.mt{flex:1;text-align:center;padding:5px;border-radius:4px;font-size:11px;color:var(--t1);cursor:pointer;transition:all .14s;}
+.mt.on{background:var(--bg1);color:var(--t0);}
+
+/* ─── DIVIDER ─── */
+hr.d{border:none;border-top:1px solid var(--border);margin:12px 0;}
+
+/* ─── COUNTRY CHIPS ─── */
+.cc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:5px;}
+.cc{padding:5px 4px;border-radius:var(--rs);border:1px solid var(--border);text-align:center;cursor:pointer;transition:all .14s;}
+.cc:hover{border-color:var(--teal);}
+.cc.s{border-color:rgba(62,207,142,.35);background:rgba(62,207,142,.07);}
+.cc.d{border-color:rgba(255,82,82,.3);background:rgba(255,82,82,.07);}
+.cc-n{font-size:10px;font-weight:600;}
+.cc-s{font-size:9px;color:var(--t2);}
+
+/* ─── MAP ─── */
+.map-wrap{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--border);}
+.map-ctrls{position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:5px;}
+.mc{width:26px;height:26px;background:var(--bg2);border:1px solid var(--border2);border-radius:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:var(--t1);}
+.map-leg{position:absolute;bottom:10px;right:10px;background:rgba(12,21,32,.9);border:1px solid var(--border2);border-radius:var(--rs);padding:9px 11px;}
+.ml-row{display:flex;align-items:center;gap:6px;margin-bottom:3px;font-size:10px;color:var(--t1);}
+.ml-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* ─── CHART WRAP ─── */
+.cw{position:relative;width:100%;}
+
+/* ─── RISK HEAT ─── */
+.rh-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;}
+.rh{padding:5px 3px;border-radius:4px;text-align:center;font-size:9px;font-weight:600;}
+
+/* ─── SEASON CAL ─── */
+.scal{width:100%;font-size:10px;border-collapse:collapse;}
+.scal th{color:var(--t2);padding:3px 1px;text-align:center;font-weight:500;}
+.scal td{padding:2px;}
+.sc-m{width:14px;height:10px;border-radius:2px;margin:auto;}
+
+/* ─── SPARKLINE ─── */
+.spark{display:flex;align-items:flex-end;gap:2px;height:28px;}
+.sp-bar{border-radius:2px 2px 0 0;flex:1;min-width:3px;}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     LOGIN SCREEN
+═══════════════════════════════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-bg"></div>
+  <div class="login-grid"></div>
+
+  <!-- Ticker pinned to very top -->
+  <div class="ticker" style="position:absolute;top:0;left:0;right:0;z-index:2;">
+    <div class="ticker-lbl">AATIP LIVE</div>
+    <div class="ticker-track"><div class="ticker-inner" id="lt"></div></div>
+  </div>
+
+  <!-- Login card — centred in remaining space -->
+  <div class="login-card">
+
+    <!-- Logo -->
+    <div class="l-logo">
+      <div class="l-logomark">A</div>
+      <div>
+        <div class="l-logotitle">AATIP</div>
+        <div class="l-logosub">AfCFTA AgroTrade Intelligence</div>
+      </div>
+    </div>
+
+    <!-- Stat pills -->
+    <div class="l-pills">
+      <div class="l-pill"><span class="l-pill-n" style="color:var(--teal)">54</span> Countries</div>
+      <div class="l-pill"><span class="l-pill-n" style="color:var(--amber)">847</span> Corridors</div>
+      <div class="l-pill"><span class="l-pill-n" style="color:var(--green)">$9.3B</span> Potential</div>
+      <div class="l-pill"><span class="l-pill-n" style="color:var(--blue)">12</span> Commodities</div>
+    </div>
+
+    <!-- Heading -->
+    <div class="l-h">Sign in to your workspace</div>
+    <div class="l-sub">Select your role, then sign in to access the intelligence platform.</div>
+
+    <!-- Stakeholder selector -->
+    <div class="stake-label">I represent</div>
+    <div class="stake-grid">
+      <div class="stake-btn on" onclick="setSt(this)"><span class="stake-icon">🏛</span>Government</div>
+      <div class="stake-btn" onclick="setSt(this)"><span class="stake-icon">🏢</span>Private Sector</div>
+      <div class="stake-btn" onclick="setSt(this)"><span class="stake-icon">🌍</span>Dev. Institution</div>
+    </div>
+
+    <!-- Form fields -->
+    <div class="fl"><label>Email address</label><input class="fi" type="email" value="g.mazise@au.int" placeholder="you@institution.org"></div>
+    <div class="fl" style="margin-bottom:0"><label>Password</label><input class="fi" type="password" value="••••••••••"></div>
+
+    <!-- CTA -->
+    <button class="l-btn" onclick="login()">Sign in →</button>
+
+    <!-- Minimal footer -->
+    <div class="l-foot">
+      <a>Request access</a>
+      <span class="l-foot-sep">·</span>
+      <a>Documentation</a>
+    </div>
+
+  </div>
+
+  <!-- Subtle copyright only — no overlap -->
+  <div class="l-bottom">© 2026 AATIP · AfCFTA AgroTrade Intelligence Platform · Gerald T. Mazise</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     MAIN APPLICATION
+═══════════════════════════════════════════════════════ -->
+<div id="mainApp">
+
+  <!-- macOS chrome bar -->
+  <div class="chrome">
+    <div class="cd cd-r"></div><div class="cd cd-y"></div><div class="cd cd-g"></div>
+    <div class="chrome-t">AATIP — AfCFTA AgroTrade Intelligence Platform · v2.0 Continental</div>
+    <div class="chrome-r"><div class="live-dot"></div><span style="color:var(--green)">LIVE</span> · 54 Countries · 12 Commodities</div>
+  </div>
+
+  <!-- Price ticker -->
+  <div class="ticker">
+    <div class="ticker-lbl">MARKETS</div>
+    <div class="ticker-track"><div class="ticker-inner" id="mt"></div></div>
+  </div>
+
+  <div class="app-body">
+
+    <!-- ── SIDEBAR ── -->
+    <div class="sidebar">
+      <div class="sb-head">
+        <div class="sb-mark">A</div>
+        <div><div class="sb-name">AATIP</div><div class="sb-ver">v2.0 · 54 Nations</div></div>
+      </div>
+
+      <div class="sb-sec">Intelligence</div>
+      <div class="nav on" onclick="go('dash',this)"><div class="nav-ic">📊</div>Executive Dashboard</div>
+      <div class="nav" onclick="go('map',this)"><div class="nav-ic">🌍</div>Continental Map</div>
+      <div class="nav" onclick="go('corridors',this)"><div class="nav-ic">📈</div>Corridor Explorer</div>
+      <div class="nav" onclick="go('intel',this)"><div class="nav-ic">💹</div>Market Intelligence</div>
+
+      <div class="sb-sec">Analysis</div>
+      <div class="nav" onclick="go('policy',this)"><div class="nav-ic">⚙️</div>Policy Simulator</div>
+      <div class="nav" onclick="go('forecast',this)"><div class="nav-ic">🔮</div>Forecasting</div>
+      <div class="nav" onclick="go('risk',this)"><div class="nav-ic">🚨</div>Risk &amp; Alerts<div class="n-badge">3</div></div>
+      <div class="nav" onclick="go('ai',this)"><div class="nav-ic">🤖</div>AI Recommendations</div>
+
+      <div class="sb-sec">Operations</div>
+      <div class="nav" onclick="go('supply',this)"><div class="nav-ic">🌾</div>Supply Chain</div>
+      <div class="nav" onclick="go('network',this)"><div class="nav-ic">🕸</div>Trade Network</div>
+
+      <div class="sb-foot">
+        <div class="u-card">
+          <div class="u-av">GM</div>
+          <div><div class="u-name">G.T. Mazise</div><div class="u-role">Government · Policy</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CONTENT ── -->
+    <div class="content">
+      <div class="c-head">
+        <div><div class="c-title" id="pgT">Executive Dashboard</div><div class="c-sub" id="pgS">Continental AgriTrade Intelligence · Real-time · May 2026</div></div>
+        <div class="hr">
+          <div class="live-l"><div class="live-dot"></div>LIVE</div>
+          <div class="pill on" id="cPill" onclick="cycleComm()">🌽 Maize</div>
+          <div class="pill">May 2026</div>
+          <div class="pill">All Regions</div>
+        </div>
+      </div>
+
+      <!-- ══════════ PAGE: EXECUTIVE DASHBOARD ══════════ -->
+      <div class="page on" id="pg-dash">
+        <div class="g4 mb11">
+          <div class="kpi"><div class="kpi-lb">Active Corridors</div><div class="kpi-v" style="color:var(--teal)">847</div><div class="kpi-ch pos">↑ 12% vs last month</div></div>
+          <div class="kpi"><div class="kpi-lb">Arbitrage Signals</div><div class="kpi-v" style="color:var(--amber)">136</div><div class="kpi-ch neu">MIS &gt; 0 corridor-months</div></div>
+          <div class="kpi"><div class="kpi-lb">AfCFTA Trade Potential</div><div class="kpi-v" style="color:var(--green)">$9.3B</div><div class="kpi-ch pos">Full implementation scenario</div></div>
+          <div class="kpi"><div class="kpi-lb">Countries Connected</div><div class="kpi-v" style="color:var(--blue)">54</div><div class="kpi-ch pos">All African Union members</div></div>
+        </div>
+
+        <div class="row">
+          <!-- MIS Panel -->
+          <div class="f2 card">
+            <div class="st">Market Inefficiency Score — All Corridors <span class="sa">View full ›</span></div>
+            <div class="mis-row"><div class="mis-lbl">TAN→KEN</div><div class="mis-trk"><div class="mis-ctr"></div><div class="mis-fill" style="left:50%;width:21%;background:var(--amber)"></div></div><div class="mis-val" style="color:var(--amber)">+0.212</div></div>
+            <div class="mis-row"><div class="mis-lbl">ZAM→KEN</div><div class="mis-trk"><div class="mis-ctr"></div><div class="mis-fill" style="left:50%;width:6.2%;background:var(--teal)"></div></div><div class="mis-val" style="color:var(--teal)">+0.062</div></div>
+            <div class="mis-row"><div class="mis-lbl">ZAM→TAN</div><div class="mis-trk"><div class="mis-ctr"></div><div class="mis-fill" style="right:50%;width:9%;background:var(--t2)"></div></div><div class="mis-val" style="color:var(--t1)">−0.091</div></div>
+            <div class="mis-row"><div class="mis-lbl">TAN→ZAM</div><div class="mis-trk"><div class="mis-ctr"></div><div class="mis-fill" style="right:50%;width:4%;background:var(--t2)"></div></div><div class="mis-val" style="color:var(--t1)">−0.040</div></div>
+            <div class="mis-row"><div class="mis-lbl">KEN→TAN</div><div class="mis-trk"><div class="mis-ctr"></div><div class="mis-fill" style="right:50%;width:18.4%;background:var(--coral)"></div></div><div class="mis-val" style="color:var(--coral)">−0.184</div></div>
+            <div class="mis-row" style="margin:0"><div class="mis-lbl">KEN→ZAM</div><div class="mis-trk"><div class="mis-ctr"></div><div class="mis-fill" style="right:50%;width:22.7%;background:var(--coral)"></div></div><div class="mis-val" style="color:var(--coral)">−0.227</div></div>
+            <hr class="d">
+            <div style="font-size:10px;color:var(--t2)">MIS &gt; 0 = Trade viable &nbsp;·&nbsp; MIS &gt; 0.5 = Strong signal &nbsp;·&nbsp; MIS &gt; 1.5 = Market failure</div>
+          </div>
+
+          <!-- Opportunities + Alerts -->
+          <div class="f1" style="display:flex;flex-direction:column;gap:11px;">
+            <div class="card" style="flex:1">
+              <div class="st">Top Opportunities</div>
+              <div class="csm mb11">
+                <div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:12px;font-weight:700">TAN → KEN</div><div style="font-size:10px;color:var(--t1)">Maize · 1,743kt potential</div></div><div class="b ba">MIS 0.21</div></div>
+                <div class="pb mt8"><div class="pf" style="width:82%;background:var(--amber)"></div></div>
+              </div>
+              <div class="csm mb11">
+                <div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:12px;font-weight:700">ZAM → KEN</div><div style="font-size:10px;color:var(--t1)">Maize · 2,553kt potential</div></div><div class="b bt">MIS 0.06</div></div>
+                <div class="pb mt8"><div class="pf" style="width:65%;background:var(--teal)"></div></div>
+              </div>
+              <div class="csm">
+                <div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:12px;font-weight:700">GHA → NGA</div><div style="font-size:10px;color:var(--t1)">Cocoa · 890kt potential</div></div><div class="b bg">MIS 0.18</div></div>
+                <div class="pb mt8"><div class="pf" style="width:71%;background:var(--green)"></div></div>
+              </div>
+            </div>
+            <div class="card" style="flex:1">
+              <div class="st" style="font-size:12px">Active Alerts</div>
+              <div class="alert a-hi"><div class="a-ic">⚠</div><div><div class="a-title" style="color:var(--coral)">Food Security: Kenya</div><div class="a-body">Deficit severity 0.84 · Pre-harvest scarcity window</div><div class="a-time">2 hours ago</div></div></div>
+              <div class="alert a-md"><div class="a-ic">📊</div><div><div class="a-title" style="color:var(--amber)">Price Spike: Zambia Maize</div><div class="a-body">+18% MoM · Supply shock z = −2.3</div><div class="a-time">5 hours ago</div></div></div>
+              <div class="alert a-lo" style="margin:0"><div class="a-ic">✓</div><div><div class="a-title" style="color:var(--green)">Corridor Unlocked: TAN→KEN</div><div class="a-body">MIS threshold crossed · 15 months newly viable</div><div class="a-time">Yesterday</div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="f1 card">
+            <div class="st">Commodity Overview — All Markets</div>
+            <table class="dt">
+              <thead><tr><th>Commodity</th><th>Corridors</th><th>Avg MIS</th><th>Opportunity</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>🌽 Maize</td><td>6</td><td style="font-family:var(--mono);color:var(--teal)">0.042</td><td>$9.3B</td><td><span class="b bt">Active</span></td></tr>
+                <tr><td>🌾 Wheat</td><td>14</td><td style="font-family:var(--mono);color:var(--amber)">0.187</td><td>$4.1B</td><td><span class="b ba">High MIS</span></td></tr>
+                <tr><td>🍚 Rice</td><td>22</td><td style="font-family:var(--mono);color:var(--amber)">0.231</td><td>$6.8B</td><td><span class="b ba">High MIS</span></td></tr>
+                <tr><td>☕ Coffee</td><td>8</td><td style="font-family:var(--mono);color:var(--green)">−0.021</td><td>$2.4B</td><td><span class="b bg">Efficient</span></td></tr>
+                <tr><td>🍫 Cocoa</td><td>5</td><td style="font-family:var(--mono);color:var(--teal)">0.094</td><td>$3.2B</td><td><span class="b bt">Active</span></td></tr>
+                <tr><td>🫘 Soybean</td><td>10</td><td style="font-family:var(--mono);color:var(--coral)">0.412</td><td>$1.9B</td><td><span class="b bc">Critical</span></td></tr>
+                <tr><td>🌿 Sorghum</td><td>9</td><td style="font-family:var(--mono);color:var(--amber)">0.156</td><td>$0.8B</td><td><span class="b ba">Monitor</span></td></tr>
+                <tr><td>🍠 Cassava</td><td>7</td><td style="font-family:var(--mono);color:var(--teal)">0.078</td><td>$1.1B</td><td><span class="b bt">Active</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="f1 card">
+            <div class="st">MIS Trend — TAN→KEN (2013–2022)</div>
+            <div class="cw" style="height:200px"><canvas id="cMisTrend" role="img" aria-label="MIS trend chart TAN to KEN 2013 to 2022"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ PAGE: CONTINENTAL MAP ══════════ -->
+      <div class="page" id="pg-map">
+        <div class="cp-bar mb11">
+          <div class="cp on">🌽 Maize</div><div class="cp">🌾 Wheat</div><div class="cp">🍚 Rice</div>
+          <div class="cp">☕ Coffee</div><div class="cp">🍫 Cocoa</div><div class="cp">🫘 Soybean</div>
+          <div class="cp">🥜 Groundnut</div><div class="cp">🍠 Cassava</div><div class="cp">🌿 Sorghum</div>
+          <div class="cp">🍌 Plantain</div><div class="cp">🐄 Livestock</div><div class="cp">🌻 Sunflower</div>
+        </div>
+        <div class="row" style="align-items:flex-start">
+          <div class="f3 map-wrap" style="background:var(--bg1)">
+            <svg viewBox="0 0 580 560" width="100%" height="500" style="display:block;background:var(--bg1)">
+              <defs>
+                <marker id="arT" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5Z" fill="#F5A623" opacity=".85"/></marker>
+                <marker id="arG" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5Z" fill="#00C9A7" opacity=".85"/></marker>
+                <marker id="arB" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5Z" fill="#3ECF8E" opacity=".7"/></marker>
+              </defs>
+              <!-- Africa landmass -->
+              <path d="M215,30 L295,25 L360,50 L400,90 L415,135 L425,175 L440,210 L450,250 L458,290 L460,330 L455,370 L445,405 L430,440 L410,470 L388,498 L362,518 L332,532 L300,540 L268,535 L240,520 L215,498 L196,472 L185,445 L178,415 L168,388 L162,360 L158,330 L155,300 L154,272 L155,248 L152,222 L144,198 L136,172 L130,150 L132,128 L142,105 L158,82 L178,58 Z" fill="var(--bg2)" stroke="var(--bg4)" stroke-width="1.5"/>
+              <!-- Internal regions shading -->
+              <ellipse cx="200" cy="160" rx="60" ry="40" fill="rgba(0,201,167,.03)"/>
+              <ellipse cx="360" cy="240" rx="80" ry="70" fill="rgba(62,207,142,.04)"/>
+              <ellipse cx="290" cy="410" rx="70" ry="60" fill="rgba(74,158,224,.03)"/>
+
+              <!-- ── Country Nodes ── -->
+              <!-- East & Southern Africa (main MVP) -->
+              <circle cx="395" cy="250" r="11" fill="var(--coral-m)" stroke="var(--coral)" stroke-width="1.5"/> <!-- Kenya deficit -->
+              <text x="409" y="254" fill="var(--t0)" font-size="9.5" font-family="-apple-system" font-weight="600">Kenya</text>
+              <circle cx="370" cy="218" r="10" fill="var(--green-m)" stroke="var(--green)" stroke-width="1.5"/> <!-- Tanzania surplus -->
+              <text x="383" y="222" fill="var(--t0)" font-size="9.5" font-family="-apple-system" font-weight="600">Tanzania</text>
+              <circle cx="330" cy="298" r="11" fill="var(--teal-m)" stroke="var(--teal)" stroke-width="1.5"/> <!-- Zambia surplus -->
+              <text x="344" y="302" fill="var(--t0)" font-size="9.5" font-family="-apple-system" font-weight="600">Zambia</text>
+              <!-- More East Africa -->
+              <circle cx="380" cy="188" r="8" fill="var(--green-d)" stroke="var(--green)" stroke-width="1"/> <!-- Uganda -->
+              <text x="391" y="192" fill="var(--t1)" font-size="8.5" font-family="-apple-system">Uganda</text>
+              <circle cx="410" cy="205" r="7" fill="var(--amber-d)" stroke="var(--amber)" stroke-width="1"/> <!-- Ethiopia -->
+              <text x="420" y="209" fill="var(--t1)" font-size="8.5" font-family="-apple-system">Ethiopia</text>
+              <circle cx="435" cy="240" r="6" fill="var(--coral-d)" stroke="var(--coral)" stroke-width="1"/> <!-- Somalia -->
+              <text x="443" y="244" fill="var(--t1)" font-size="8" font-family="-apple-system">Somalia</text>
+              <circle cx="320" cy="272" r="7" fill="var(--amber-d)" stroke="var(--amber)" stroke-width="1"/> <!-- Malawi -->
+              <text x="330" y="276" fill="var(--t1)" font-size="8.5" font-family="-apple-system">Malawi</text>
+              <circle cx="355" cy="318" r="7" fill="var(--green-d)" stroke="var(--green)" stroke-width="1"/> <!-- Zimbabwe -->
+              <text x="365" y="322" fill="var(--t1)" font-size="8.5" font-family="-apple-system">Zimbabwe</text>
+              <!-- Southern -->
+              <circle cx="325" cy="360" r="7" fill="var(--blue-d)" stroke="var(--blue)" stroke-width="1"/> <!-- Mozambique -->
+              <text x="335" y="364" fill="var(--t1)" font-size="8.5" font-family="-apple-system">Mozambique</text>
+              <circle cx="305" cy="418" r="8" fill="var(--blue-d)" stroke="var(--blue)" stroke-width="1"/> <!-- Botswana -->
+              <text x="315" y="422" fill="var(--t1)" font-size="8.5" font-family="-apple-system">Botswana</text>
+              <circle cx="288" cy="468" r="11" fill="var(--green-m)" stroke="var(--green)" stroke-width="1.5"/> <!-- South Africa -->
+              <text x="302" y="472" fill="var(--t0)" font-size="9.5" font-family="-apple-system" font-weight="600">S. Africa</text>
+              <circle cx="256" cy="460" r="7" fill="var(--blue-d)" stroke="var(--blue)" stroke-width="1"/> <!-- Namibia -->
+              <text x="238" y="457" fill="var(--t1)" font-size="8" font-family="-apple-system">Namibia</text>
+              <!-- Central -->
+              <circle cx="285" cy="262" r="9" fill="var(--coral-d)" stroke="var(--coral)" stroke-width="1"/> <!-- DRC -->
+              <text x="296" y="266" fill="var(--t0)" font-size="9" font-family="-apple-system" font-weight="600">DRC</text>
+              <!-- West -->
+              <circle cx="210" cy="230" r="10" fill="var(--amber-m)" stroke="var(--amber)" stroke-width="1.5"/> <!-- Nigeria -->
+              <text x="222" y="234" fill="var(--t0)" font-size="9.5" font-family="-apple-system" font-weight="600">Nigeria</text>
+              <circle cx="185" cy="222" r="8" fill="var(--green-d)" stroke="var(--green)" stroke-width="1"/> <!-- Ghana -->
+              <text x="168" y="219" fill="var(--t1)" font-size="8.5" font-family="-apple-system">Ghana</text>
+              <circle cx="168" cy="208" r="7" fill="var(--green-d)" stroke="var(--green)" stroke-width="1"/> <!-- Côte d'Ivoire -->
+              <text x="150" y="205" fill="var(--t1)" font-size="7.5" font-family="-apple-system">C.d'Ivoire</text>
+              <circle cx="158" cy="190" r="6" fill="var(--blue-d)" stroke="var(--blue)" stroke-width="1"/> <!-- Senegal -->
+              <text x="141" y="187" fill="var(--t1)" font-size="7.5" font-family="-apple-system">Senegal</text>
+              <circle cx="232" cy="200" r="7" fill="var(--green-d)" stroke="var(--green)" stroke-width="1"/> <!-- Cameroon -->
+              <text x="242" y="197" fill="var(--t1)" font-size="8" font-family="-apple-system">Cameroon</text>
+              <!-- North -->
+              <circle cx="260" cy="95" r="8" fill="var(--blue-d)" stroke="var(--blue)" stroke-width="1"/> <!-- Egypt -->
+              <text x="271" y="99" fill="var(--t1)" font-size="8.5" font-family="-apple-system">Egypt</text>
+              <circle cx="215" cy="100" r="7" fill="var(--blue-d)" stroke="var(--blue)" stroke-width="1"/> <!-- Libya -->
+              <text x="198" y="97" fill="var(--t1)" font-size="7.5" font-family="-apple-system">Libya</text>
+              <circle cx="195" cy="80" r="6" fill="var(--blue-d)" stroke="var(--blue)" stroke-width="1"/> <!-- Tunisia -->
+              <circle cx="177" cy="68" r="6" fill="var(--blue-d)" stroke="var(--blue)" stroke-width="1"/> <!-- Algeria -->
+              <circle cx="162" cy="75" r="7" fill="var(--blue-d)" stroke="var(--blue)" stroke-width="1"/> <!-- Morocco -->
+              <text x="145" y="72" fill="var(--t1)" font-size="8" font-family="-apple-system">Morocco</text>
+              <circle cx="238" cy="158" r="7" fill="var(--coral-d)" stroke="var(--coral)" stroke-width="1"/> <!-- Sudan -->
+              <text x="247" y="155" fill="var(--t1)" font-size="7.5" font-family="-apple-system">Sudan</text>
+
+              <!-- ── TRADE FLOW ARCS ── -->
+              <!-- TAN→KEN primary (strong amber) -->
+              <path d="M370,218 Q390,230 395,250" stroke="var(--amber)" stroke-width="3" fill="none" marker-end="url(#arT)" opacity=".9"/>
+              <!-- ZAM→KEN -->
+              <path d="M330,298 Q375,282 395,250" stroke="var(--teal)" stroke-width="2.2" fill="none" marker-end="url(#arG)" opacity=".8"/>
+              <!-- ZAM→TAN -->
+              <path d="M330,298 Q348,262 370,218" stroke="var(--teal)" stroke-width="1.6" fill="none" marker-end="url(#arG)" opacity=".7"/>
+              <!-- GHA→NGA -->
+              <path d="M185,222 Q198,224 210,230" stroke="var(--green)" stroke-width="1.6" fill="none" marker-end="url(#arB)" opacity=".7"/>
+              <!-- ZAM→ZIM -->
+              <path d="M330,298 Q342,308 355,318" stroke="var(--teal)" stroke-width="1.4" fill="none" marker-end="url(#arG)" opacity=".55"/>
+              <!-- SA→MOZ -->
+              <path d="M288,468 Q308,415 325,360" stroke="var(--green)" stroke-width="1.4" fill="none" marker-end="url(#arB)" opacity=".5"/>
+              <!-- ETH→KEN -->
+              <path d="M410,205 Q410,225 395,250" stroke="var(--amber)" stroke-width="1.2" fill="none" marker-end="url(#arT)" opacity=".45"/>
+
+              <!-- Informal trade halo (TAN→KEN) -->
+              <circle cx="382" cy="234" r="22" fill="rgba(245,166,35,.05)" stroke="rgba(245,166,35,.18)" stroke-width="1" stroke-dasharray="4,3"/>
+              <text x="382" y="237" text-anchor="middle" fill="rgba(245,166,35,.5)" font-size="7" font-family="-apple-system">P=0.385</text>
+
+              <!-- MIS labels -->
+              <rect x="382" y="230" width="38" height="14" rx="3" fill="rgba(245,166,35,.15)" style="display:none"/>
+              <text x="406" y="240" text-anchor="middle" fill="var(--amber)" font-size="8" font-family="-apple-system" opacity=".8">MIS 0.21</text>
+              <text x="358" y="266" text-anchor="middle" fill="var(--teal)" font-size="8" font-family="-apple-system" opacity=".8">MIS 0.06</text>
+
+              <!-- Region labels -->
+              <text x="14" y="90" fill="var(--t3)" font-size="9" font-family="-apple-system" font-weight="500">NORTH AFRICA</text>
+              <text x="14" y="230" fill="var(--t3)" font-size="9" font-family="-apple-system" font-weight="500">WEST AFRICA</text>
+              <text x="14" y="360" fill="var(--t3)" font-size="9" font-family="-apple-system" font-weight="500">CENTRAL AFRICA</text>
+              <text x="14" y="450" fill="var(--t3)" font-size="9" font-family="-apple-system" font-weight="500">SOUTHERN AFRICA</text>
+              <text x="430" y="175" fill="var(--t3)" font-size="9" font-family="-apple-system" font-weight="500">HORN</text>
+              <text x="450" y="260" fill="var(--t3)" font-size="9" font-family="-apple-system" font-weight="500">EAST AFRICA</text>
+            </svg>
+            <div class="map-ctrls"><div class="mc">+</div><div class="mc">−</div><div class="mc">⊕</div></div>
+            <div class="map-leg">
+              <div class="ml-row"><div class="ml-dot" style="background:var(--green)"></div>Surplus</div>
+              <div class="ml-row"><div class="ml-dot" style="background:var(--coral)"></div>Deficit</div>
+              <div class="ml-row"><div class="ml-dot" style="background:var(--blue)"></div>Neutral</div>
+              <hr class="d" style="margin:5px 0">
+              <div class="ml-row"><div style="width:18px;height:2px;background:var(--amber)"></div><span style="margin-left:6px">High MIS</span></div>
+              <div class="ml-row"><div style="width:18px;height:2px;background:var(--teal)"></div><span style="margin-left:6px">Active</span></div>
+              <div class="ml-row" style="font-size:9px;color:var(--t2)">⊙ Informal trade signal</div>
+            </div>
+          </div>
+          <!-- Map stats panel -->
+          <div class="f1" style="display:flex;flex-direction:column;gap:10px">
+            <div class="card">
+              <div class="st" style="font-size:12px">Continental Integration</div>
+              <div class="sr"><div class="sr-lb">Market Integration</div><div class="sr-tr"><div class="sr-fi" style="width:42%;background:var(--amber)"></div></div><div class="sr-v">42%</div></div>
+              <div class="sr"><div class="sr-lb">Corridor Coverage</div><div class="sr-tr"><div class="sr-fi" style="width:68%;background:var(--teal)"></div></div><div class="sr-v">68%</div></div>
+              <div class="sr"><div class="sr-lb">AfCFTA Readiness</div><div class="sr-tr"><div class="sr-fi" style="width:55%;background:var(--blue)"></div></div><div class="sr-v">55%</div></div>
+              <div class="sr" style="margin:0"><div class="sr-lb">Informal Flow Share</div><div class="sr-tr"><div class="sr-fi" style="width:76%;background:var(--purple)"></div></div><div class="sr-v">76%</div></div>
+            </div>
+            <div class="card">
+              <div class="st" style="font-size:12px">Country Status — Maize</div>
+              <div class="cc-grid">
+                <div class="cc s"><div class="cc-n">ZMB</div><div class="cc-s">Surplus</div></div>
+                <div class="cc d"><div class="cc-n">KEN</div><div class="cc-s">Deficit</div></div>
+                <div class="cc s"><div class="cc-n">TZA</div><div class="cc-s">Surplus</div></div>
+                <div class="cc s"><div class="cc-n">ZWE</div><div class="cc-s">Surplus</div></div>
+                <div class="cc d"><div class="cc-n">ETH</div><div class="cc-s">Deficit</div></div>
+                <div class="cc"><div class="cc-n">NGA</div><div class="cc-s">Neutral</div></div>
+                <div class="cc s"><div class="cc-n">GHA</div><div class="cc-s">Surplus</div></div>
+                <div class="cc d"><div class="cc-n">MOZ</div><div class="cc-s">Deficit</div></div>
+                <div class="cc s"><div class="cc-n">UGA</div><div class="cc-s">Surplus</div></div>
+                <div class="cc d"><div class="cc-n">DRC</div><div class="cc-s">Critical</div></div>
+                <div class="cc s"><div class="cc-n">ZAF</div><div class="cc-s">Surplus</div></div>
+                <div class="cc d"><div class="cc-n">SOM</div><div class="cc-s">Crisis</div></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="st" style="font-size:12px">Informal Trade Hotspots</div>
+              <div class="alert a-md" style="margin-bottom:6px"><div class="a-ic">⚡</div><div><div class="a-title" style="font-size:11px;color:var(--amber)">TAN→KEN · P=0.385</div><div class="a-body">87Mt estimated informal volume · 10yr</div></div></div>
+              <div class="alert a-md" style="margin:0"><div class="a-ic">⚡</div><div><div class="a-title" style="font-size:11px;color:var(--amber)">ZAM→TAN · P=0.291</div><div class="a-body">30.7Mt mid-estimate · UNCTAD-calibrated</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ PAGE: CORRIDOR EXPLORER ══════════ -->
+      <div class="page" id="pg-corridors">
+        <div class="row mb11" style="align-items:center">
+          <select style="background:var(--bg1);border:1px solid var(--border2);border-radius:var(--rs);color:var(--t0);font-family:var(--fn);font-size:13px;padding:7px 11px;outline:none" id="corrSel">
+            <option>Tanzania → Kenya</option><option>Zambia → Kenya</option><option>Zambia → Tanzania</option>
+            <option>Kenya → Tanzania</option><option>Kenya → Zambia</option><option>Tanzania → Zambia</option>
+            <option>Ghana → Nigeria</option><option>Ethiopia → Somalia</option><option>South Africa → Mozambique</option>
+          </select>
+          <div class="hr" style="margin-left:auto">
+            <div class="pill on">Maize</div><div class="pill">2013–2022</div><div class="pill">All Commodities</div>
+          </div>
+        </div>
+        <div class="g4 mb11">
+          <div class="kpi"><div class="kpi-lb">Mean MIS</div><div class="kpi-v" style="color:var(--amber);font-size:22px">0.212</div><div class="kpi-ch pos">Positive · Trade viable</div></div>
+          <div class="kpi"><div class="kpi-lb">Arbitrage Months</div><div class="kpi-v" style="font-size:22px">61<span style="font-size:14px;font-weight:400;color:var(--t1)">/74</span></div><div class="kpi-ch pos">82% of observation months</div></div>
+          <div class="kpi"><div class="kpi-lb">Net Arb Profit</div><div class="kpi-v" style="color:var(--green);font-size:22px">$0.087</div><div class="kpi-ch pos">Per kg avg · Max $0.31</div></div>
+          <div class="kpi"><div class="kpi-lb">Informal Probability</div><div class="kpi-v" style="color:var(--purple);font-size:22px">0.385</div><div class="kpi-ch neu">High confidence signal</div></div>
+        </div>
+        <div class="row">
+          <div class="f2 card">
+            <div class="st">MIS Time Series · TAN → KEN</div>
+            <div class="cw" style="height:210px"><canvas id="cCorrMIS" role="img" aria-label="MIS time series chart"></canvas></div>
+          </div>
+          <div class="f1 card">
+            <div class="st">Corridor Health Score</div>
+            <div style="text-align:center;padding:10px 0">
+              <div style="font-size:52px;font-weight:800;color:var(--amber);letter-spacing:-3px;line-height:1">8.2</div>
+              <div style="font-size:12px;color:var(--t1);margin-top:4px">out of 10 · Strong Opportunity</div>
+            </div>
+            <hr class="d">
+            <div class="sr"><div class="sr-lb">Price Signal</div><div class="sr-tr"><div class="sr-fi" style="width:88%;background:var(--green)"></div></div><div class="sr-v">0.88</div></div>
+            <div class="sr"><div class="sr-lb">Supply Confidence</div><div class="sr-tr"><div class="sr-fi" style="width:74%;background:var(--teal)"></div></div><div class="sr-v">0.74</div></div>
+            <div class="sr"><div class="sr-lb">Route Feasibility</div><div class="sr-tr"><div class="sr-fi" style="width:65%;background:var(--amber)"></div></div><div class="sr-v">0.65</div></div>
+            <div class="sr" style="margin:0"><div class="sr-lb">Market Friction</div><div class="sr-tr"><div class="sr-fi" style="width:38%;background:var(--coral)"></div></div><div class="sr-v" style="color:var(--coral)">0.38↓</div></div>
+          </div>
+        </div>
+        <div class="row mt11">
+          <div class="f1 card">
+            <div class="st">Price Comparison · USD/kg</div>
+            <div class="cw" style="height:175px"><canvas id="cPriceComp" role="img" aria-label="Price comparison chart Tanzania vs Kenya"></canvas></div>
+          </div>
+          <div class="f1 card">
+            <div class="st">Econometric Validation</div>
+            <table class="dt" style="font-size:11px">
+              <tbody>
+                <tr><td style="color:var(--t1)">Cointegration (Engle-Granger)</td><td><span class="b bg">ADF p=0.002 ✓</span></td></tr>
+                <tr><td style="color:var(--t1)">Granger Causality</td><td><span class="b bg">F=5.41, p=0.002 ✓</span></td></tr>
+                <tr><td style="color:var(--t1)">Price Transmission β</td><td style="font-family:var(--mono)">0.520 (partial)</td></tr>
+                <tr><td style="color:var(--t1)">ECM Half-life</td><td style="font-family:var(--mono)">0.79 months</td></tr>
+                <tr><td style="color:var(--t1)">ECM Status</td><td><span class="b bt">VALID · ADF p=0.000</span></td></tr>
+                <tr><td style="color:var(--t1)">Trade Matching ρ</td><td style="font-family:var(--mono)">0.772 (Spearman)</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="f1 card">
+            <div class="st">Route Analysis</div>
+            <div class="csm mb11">
+              <div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:12px;font-weight:700">Dar → Nairobi (A109)</div><div style="font-size:10px;color:var(--t1)">Via Arusha · 700km</div></div><div class="b bg">Best Route</div></div>
+              <div style="display:flex;gap:10px;margin-top:7px;font-size:11px;color:var(--t1)"><span>💰 $0.062/kg</span><span>🕐 3.2 days</span><span>🛃 1.2d border</span></div>
+            </div>
+            <div class="csm">
+              <div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:12px;font-weight:700">Mwanza → Kisumu (Ferry)</div><div style="font-size:10px;color:var(--t1)">Lake Victoria · 950km</div></div><div class="b ba">Alt Route</div></div>
+              <div style="display:flex;gap:10px;margin-top:7px;font-size:11px;color:var(--t1)"><span>💰 $0.081/kg</span><span>🕐 5.1 days</span><span>🛃 2.0d border</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ PAGE: MARKET INTELLIGENCE ══════════ -->
+      <div class="page" id="pg-intel">
+        <div class="cp-bar mb11">
+          <div class="cp on">🌽 Maize</div><div class="cp">🌾 Wheat</div><div class="cp">🍚 Rice</div>
+          <div class="cp">☕ Coffee</div><div class="cp">🍫 Cocoa</div><div class="cp">🫘 Soybean</div>
+        </div>
+        <div class="row">
+          <div class="f2 card">
+            <div class="st">Live Price Feed · Maize <span class="live-l" style="font-size:11px"><div class="live-dot" style="width:5px;height:5px"></div>Real-time</span></div>
+            <table class="dt">
+              <thead><tr><th>Market</th><th>Country</th><th>Price USD/kg</th><th>Change</th><th>Volume (Mt)</th><th>MoM Δ</th></tr></thead>
+              <tbody>
+                <tr><td style="font-weight:600">Nairobi</td><td><span class="b bc">KEN</span></td><td style="font-family:var(--mono)">0.381</td><td class="pos">▲ +4.1%</td><td>2.1</td><td><span class="b bc">+0.015</span></td></tr>
+                <tr><td style="font-weight:600">Dar es Salaam</td><td><span class="b bg">TZA</span></td><td style="font-family:var(--mono)">0.261</td><td class="pos" style="color:var(--teal)">▼ −1.2%</td><td>3.4</td><td><span class="b bg">−0.003</span></td></tr>
+                <tr><td style="font-weight:600">Lusaka</td><td><span class="b bt">ZMB</span></td><td style="font-family:var(--mono)">0.234</td><td class="pos" style="color:var(--teal)">▼ −0.5%</td><td>4.2</td><td><span class="b bt">−0.001</span></td></tr>
+                <tr><td style="font-weight:600">Kampala</td><td><span class="b bb">UGA</span></td><td style="font-family:var(--mono)">0.298</td><td class="pos">▲ +2.1%</td><td>1.8</td><td><span class="b ba">+0.006</span></td></tr>
+                <tr><td style="font-weight:600">Addis Ababa</td><td><span class="b ba">ETH</span></td><td style="font-family:var(--mono)">0.312</td><td class="neg">▲ +6.3%</td><td>2.7</td><td><span class="b bc">+0.019</span></td></tr>
+                <tr><td style="font-weight:600">Lagos</td><td><span class="b bp">NGA</span></td><td style="font-family:var(--mono)">0.347</td><td class="neg">▲ +3.8%</td><td>5.1</td><td><span class="b bc">+0.013</span></td></tr>
+                <tr><td style="font-weight:600">Accra</td><td><span class="b bg">GHA</span></td><td style="font-family:var(--mono)">0.271</td><td class="pos" style="color:var(--teal)">▼ −0.8%</td><td>1.3</td><td><span class="b bg">−0.002</span></td></tr>
+                <tr><td style="font-weight:600">Johannesburg</td><td><span class="b bb">ZAF</span></td><td style="font-family:var(--mono)">0.289</td><td style="color:var(--t1)">— 0.0%</td><td>6.3</td><td><span class="b bb">0.000</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="f1" style="display:flex;flex-direction:column;gap:10px">
+            <div class="card">
+              <div class="st">Price Spread Intelligence</div>
+              <div style="text-align:center;padding:10px 0">
+                <div style="font-size:11px;color:var(--t1);margin-bottom:3px">Nairobi − Dar es Salaam</div>
+                <div style="font-size:30px;font-weight:800;color:var(--amber);letter-spacing:-1px">$0.120/kg</div>
+                <div style="font-size:11px;color:var(--t1);margin-top:4px">Transport cost: $0.062/kg</div>
+                <div style="font-size:13px;color:var(--green);margin-top:7px;font-weight:700">Net Arbitrage: $0.058/kg ✓</div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="st">Market Integration Status</div>
+              <div class="csm mb11" style="border-color:rgba(255,82,82,.3)"><div style="font-size:11px;color:var(--coral);font-weight:700">⚠ Kenya — Fragmented</div><div style="font-size:10px;color:var(--t1);margin-top:3px">High retail premiums · Import dependent · MIS –0.184</div></div>
+              <div class="csm mb11" style="border-color:rgba(62,207,142,.3)"><div style="font-size:11px;color:var(--green);font-weight:700">✓ Tanzania — Integrated</div><div style="font-size:10px;color:var(--t1);margin-top:3px">Price transmission β=0.52 · Cointegrated · Granger causal</div></div>
+              <div class="csm" style="border-color:rgba(0,201,167,.3)"><div style="font-size:11px;color:var(--teal);font-weight:700">↗ Zambia — Surplus Exporter</div><div style="font-size:10px;color:var(--t1);margin-top:3px">High supply confidence · Export ready · MIS +0.062</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ PAGE: POLICY SIMULATOR ══════════ -->
+      <div class="page" id="pg-policy">
+        <div class="row">
+          <div class="f1 card">
+            <div class="st">Simulate AfCFTA Interventions</div>
+            <div class="sl-row">
+              <div class="sl-hd"><span class="sl-nm">Border Friction Reduction</span><span class="sl-v" id="bV">20%</span></div>
+              <input type="range" min="0" max="60" value="20" id="bS" oninput="upPol()">
+              <div class="sl-marks"><span>0%</span><span>AU 2027 (20%)</span><span>AU 2035 (50%)</span><span>60%</span></div>
+            </div>
+            <div class="sl-row">
+              <div class="sl-hd"><span class="sl-nm">Transport Cost Reduction</span><span class="sl-v" id="tV">0%</span></div>
+              <input type="range" min="0" max="20" value="0" id="tS" oninput="upPol()">
+              <div class="sl-marks"><span>0%</span><span>10%</span><span>20%</span></div>
+            </div>
+            <div class="sl-row">
+              <div class="sl-hd"><span class="sl-nm">Trade Elasticity (ε)</span><span class="sl-v" id="eV">2.0</span></div>
+              <input type="range" min="10" max="35" value="20" step="1" id="eS" oninput="upPol()">
+              <div class="sl-marks"><span>1.0 conservative</span><span>2.0 base (WB)</span><span>3.5 optimistic</span></div>
+            </div>
+            <hr class="d">
+            <div class="g3">
+              <div style="text-align:center;padding:6px"><div style="font-size:10px;color:var(--t1);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Trade Increase</div><div style="font-size:22px;font-weight:800;color:var(--teal)" id="pTI">+28.3%</div></div>
+              <div style="text-align:center;padding:6px"><div style="font-size:10px;color:var(--t1);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Volume</div><div style="font-size:22px;font-weight:800;color:var(--amber)" id="pTV">9.2Mt</div></div>
+              <div style="text-align:center;padding:6px"><div style="font-size:10px;color:var(--t1);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Value</div><div style="font-size:22px;font-weight:800;color:var(--green)" id="pTW">$2.8B</div></div>
+            </div>
+          </div>
+          <div class="f1 card">
+            <div class="st">Scenario Comparison</div>
+            <div class="cw" style="height:200px"><canvas id="cPolicy" role="img" aria-label="Policy scenario comparison chart"></canvas></div>
+            <hr class="d">
+            <table class="dt" style="font-size:11px">
+              <thead><tr><th>Scenario</th><th>Volume</th><th>Value</th><th>Months Unlocked</th></tr></thead>
+              <tbody>
+                <tr><td>Baseline</td><td>0t</td><td>$0</td><td>0</td></tr>
+                <tr><td style="color:var(--amber)">AfCFTA Phase 1</td><td>9.2Mt</td><td>$2.8B</td><td>17</td></tr>
+                <tr><td style="color:var(--teal)">AfCFTA Full</td><td>30.3Mt</td><td>$9.3B</td><td>62</td></tr>
+                <tr><td style="color:var(--purple)">Your Scenario</td><td id="ysV">9.2Mt</td><td id="ysW">$2.8B</td><td id="ysM">17</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="row mt11">
+          <div class="f1 card">
+            <div class="st">Corridor MIS Before / After Policy</div>
+            <div class="cw" style="height:190px"><canvas id="cCorrImpact" role="img" aria-label="Corridor MIS comparison chart"></canvas></div>
+          </div>
+          <div class="f1 card">
+            <div class="st">Sensitivity Analysis — AfCFTA Full</div>
+            <table class="dt" style="font-size:11px">
+              <thead><tr><th>Elasticity (ε)</th><th>Volume</th><th>Value (USD)</th></tr></thead>
+              <tbody>
+                <tr><td>1.0 (conservative)</td><td>15.2 Mt</td><td>$4.6B</td></tr>
+                <tr><td>1.5</td><td>22.7 Mt</td><td>$6.9B</td></tr>
+                <tr style="background:var(--teal-d)"><td style="color:var(--teal);font-weight:700">2.0 (base)</td><td style="color:var(--teal);font-weight:700">30.3 Mt</td><td style="color:var(--teal);font-weight:700">$9.3B</td></tr>
+                <tr><td>2.5</td><td>37.9 Mt</td><td>$11.6B</td></tr>
+                <tr><td>3.0</td><td>45.5 Mt</td><td>$13.9B</td></tr>
+                <tr><td>3.5 (optimistic)</td><td>53.0 Mt</td><td>$16.2B</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ PAGE: FORECASTING ══════════ -->
+      <div class="page" id="pg-forecast">
+        <div class="g3 mb11">
+          <div class="kpi"><div class="kpi-lb">Forecast Horizon</div><div class="kpi-v" style="font-size:22px">6 Months</div><div class="kpi-ch neu">May–November 2026</div></div>
+          <div class="kpi"><div class="kpi-lb">Price MAPE — Kenya</div><div class="kpi-v" style="color:var(--green);font-size:22px">10.4%</div><div class="kpi-ch pos">Within ≤20% threshold</div></div>
+          <div class="kpi"><div class="kpi-lb">Forward MIS — ZAM→TAN</div><div class="kpi-v" style="color:var(--teal);font-size:22px">+0.057</div><div class="kpi-ch pos">Only positive 6M forward signal</div></div>
+        </div>
+        <div class="row">
+          <div class="f2 card">
+            <div class="st">6-Month Price Forecast · Kenya Maize <span style="font-size:10px;color:var(--t2)">90% confidence interval</span></div>
+            <div class="cw" style="height:220px"><canvas id="cForecast" role="img" aria-label="6 month Kenya maize price forecast with 90 percent CI band"></canvas></div>
+          </div>
+          <div class="f1 card">
+            <div class="st">Forward MIS by Corridor</div>
+            <div class="mis-row"><div class="mis-lbl" style="font-size:10px">ZAM→TAN</div><div class="mis-trk"><div class="mis-ctr"></div><div class="mis-fill" style="left:50%;width:5.7%;background:var(--teal)"></div></div><div class="mis-val" style="color:var(--teal);font-size:10px">+0.057</div></div>
+            <div class="mis-row"><div class="mis-lbl" style="font-size:10px">TAN→KEN</div><div class="mis-trk"><div class="mis-ctr"></div><div class="mis-fill" style="right:50%;width:2%;background:var(--t2)"></div></div><div class="mis-val" style="color:var(--t1);font-size:10px">−0.020</div></div>
+            <div class="mis-row"><div class="mis-lbl" style="font-size:10px">ZAM→KEN</div><div class="mis-trk"><div class="mis-ctr"></div><div class="mis-fill" style="right:50%;width:4%;background:var(--t2)"></div></div><div class="mis-val" style="color:var(--t1);font-size:10px">−0.040</div></div>
+            <div class="mis-row" style="margin:0"><div class="mis-lbl" style="font-size:10px">KEN→TAN</div><div class="mis-trk"><div class="mis-ctr"></div><div class="mis-fill" style="right:50%;width:8%;background:var(--coral)"></div></div><div class="mis-val" style="color:var(--coral);font-size:10px">−0.080</div></div>
+            <hr class="d">
+            <div class="alert a-lo" style="margin:0"><div class="a-ic">🔮</div><div><div class="a-title" style="color:var(--green)">ZAM→TAN Emerging Window</div><div class="a-body">Only corridor with positive 6M Forward MIS. Monitor Q3 2026 for trade window opening</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ PAGE: RISK & ALERTS ══════════ -->
+      <div class="page" id="pg-risk">
+        <div class="g4 mb11">
+          <div class="kpi" style="border-color:rgba(255,82,82,.25)"><div class="kpi-lb" style="color:var(--coral)">Critical Alerts</div><div class="kpi-v" style="color:var(--coral)">3</div><div class="kpi-ch neg">Immediate action required</div></div>
+          <div class="kpi" style="border-color:rgba(245,166,35,.25)"><div class="kpi-lb" style="color:var(--amber)">Warning Signals</div><div class="kpi-v" style="color:var(--amber)">7</div><div class="kpi-ch neu">Monitor closely</div></div>
+          <div class="kpi"><div class="kpi-lb">Deficit Countries</div><div class="kpi-v">12</div><div class="kpi-ch neu">Kenya, Ethiopia, Somalia…</div></div>
+          <div class="kpi"><div class="kpi-lb">Continental Risk Score</div><div class="kpi-v" style="color:var(--amber)">0.42</div><div class="kpi-ch neu">Moderate · Upside remains</div></div>
+        </div>
+        <div class="row">
+          <div class="f1">
+            <div class="st">Active Alerts</div>
+            <div class="alert a-hi"><div class="a-ic">🔴</div><div><div class="a-title" style="color:var(--coral)">CRITICAL: Kenya Pre-Harvest Scarcity</div><div class="a-body">Importer Deficit Severity = 0.84 · Pre-harvest window June–August. Activate TAN→KEN or ZAM→KEN immediately</div><div class="a-time">Updated 2h ago · High confidence · Engine 01 RF Deficit Recall = 1.000</div></div></div>
+            <div class="alert a-hi"><div class="a-ic">🔴</div><div><div class="a-title" style="color:var(--coral)">CRITICAL: Somalia Food Security Crisis</div><div class="a-body">Crisis Signal active · MIS &gt; 1.5 structural failure · Requires humanitarian + trade intervention</div><div class="a-time">Updated 4h ago · High confidence</div></div></div>
+            <div class="alert a-hi"><div class="a-ic">🔴</div><div><div class="a-title" style="color:var(--coral)">CRITICAL: Zambia Southern Province Drought</div><div class="a-body">Supply shock z = −2.3 · Rainfall anomaly −1.8σ · Export capacity at risk. Northern Zambia still viable</div><div class="a-time">Updated 6h ago · High confidence</div></div></div>
+            <div class="alert a-md"><div class="a-ic">🟡</div><div><div class="a-title" style="color:var(--amber)">WARNING: Price Convergence Failure · KEN↔ZAM</div><div class="a-body">MIS persistent for 8 months · Informal trade likely (P=0.31) · Formalization opportunity</div><div class="a-time">Updated 1d ago</div></div></div>
+            <div class="alert a-md"><div class="a-ic">🟡</div><div><div class="a-title" style="color:var(--amber)">WARNING: DRC Supply Disruption Risk</div><div class="a-body">Drought index elevated · Production YoY −12% · Downstream corridor risk for Zambia transit routes</div><div class="a-time">Updated 2d ago</div></div></div>
+          </div>
+          <div class="f1" style="display:flex;flex-direction:column;gap:10px">
+            <div class="card">
+              <div class="st">Country Risk Heatmap</div>
+              <div class="rh-grid">
+                <div class="rh" style="background:rgba(62,207,142,.15);color:var(--green)">ZMB</div>
+                <div class="rh" style="background:rgba(255,82,82,.3);color:var(--coral)">KEN</div>
+                <div class="rh" style="background:rgba(62,207,142,.12);color:var(--green)">TZA</div>
+                <div class="rh" style="background:rgba(62,207,142,.1);color:var(--green)">UGA</div>
+                <div class="rh" style="background:rgba(245,166,35,.2);color:var(--amber)">ETH</div>
+                <div class="rh" style="background:rgba(255,82,82,.5);color:var(--coral)">SOM</div>
+                <div class="rh" style="background:rgba(62,207,142,.1);color:var(--green)">ZWE</div>
+                <div class="rh" style="background:rgba(245,166,35,.15);color:var(--amber)">MOZ</div>
+                <div class="rh" style="background:rgba(62,207,142,.1);color:var(--green)">MWI</div>
+                <div class="rh" style="background:rgba(74,158,224,.15);color:var(--blue)">ZAF</div>
+                <div class="rh" style="background:rgba(255,82,82,.22);color:var(--coral)">DRC</div>
+                <div class="rh" style="background:rgba(245,166,35,.2);color:var(--amber)">NGA</div>
+                <div class="rh" style="background:rgba(62,207,142,.12);color:var(--green)">GHA</div>
+                <div class="rh" style="background:rgba(62,207,142,.1);color:var(--green)">CIV</div>
+                <div class="rh" style="background:rgba(74,158,224,.1);color:var(--blue)">EGY</div>
+                <div class="rh" style="background:rgba(74,158,224,.1);color:var(--blue)">MAR</div>
+                <div class="rh" style="background:rgba(245,166,35,.15);color:var(--amber)">SDN</div>
+                <div class="rh" style="background:rgba(62,207,142,.1);color:var(--green)">BWA</div>
+              </div>
+              <div style="display:flex;gap:10px;margin-top:8px;font-size:9px"><span style="color:var(--coral)">■ High</span><span style="color:var(--amber)">■ Medium</span><span style="color:var(--green)">■ Low</span><span style="color:var(--blue)">■ Neutral</span></div>
+            </div>
+            <div class="card">
+              <div class="st">Pre-Harvest Scarcity Calendar</div>
+              <table class="scal">
+                <thead><tr><th style="text-align:left;width:55px">Country</th><td>J</td><td>F</td><td>M</td><td>A</td><td>M</td><td>J</td><td>J</td><td>A</td><td>S</td><td>O</td><td>N</td><td>D</td></tr></thead>
+                <tbody>
+                  <tr><td style="font-size:10px;font-weight:600;padding:3px 0">Kenya</td><td><div class="sc-m" style="background:rgba(255,82,82,.55)"></div></td><td><div class="sc-m" style="background:rgba(255,82,82,.55)"></div></td><td><div class="sc-m" style="background:rgba(62,207,142,.2)"></div></td><td><div class="sc-m" style="background:rgba(62,207,142,.2)"></div></td><td><div class="sc-m" style="background:rgba(62,207,142,.2)"></div></td><td><div class="sc-m" style="background:rgba(255,82,82,.6)"></div></td><td><div class="sc-m" style="background:rgba(255,82,82,.75)"></div></td><td><div class="sc-m" style="background:rgba(255,82,82,.75)"></div></td><td><div class="sc-m" style="background:rgba(62,207,142,.3)"></div></td><td><div class="sc-m" style="background:rgba(62,207,142,.2)"></div></td><td><div class="sc-m" style="background:rgba(62,207,142,.2)"></div></td><td><div class="sc-m" style="background:rgba(255,82,82,.35)"></div></td></tr>
+                  <tr><td style="font-size:10px;font-weight:600;padding:3px 0">Zambia</td><td><div class="sc-m" style="background:rgba(62,207,142,.2)"></div></td><td><div class="sc-m" style="background:rgba(62,207,142,.2)"></div></td><td><div class="sc-m" style="background:rgba(62,207,142,.4)"></div></td><td><div class="sc-m" style="background:rgba(62,207,142,.3)"></div></td><td><div class="sc-m" style="background:rgba(255,82,82,.3)"></div></td><td><div class="sc-m" style="background:rgba(255,82,82,.5)"></div></td><td><div class="sc-m" style="background:rgba(255,82,82,.4)"></div></td><td><div class="sc-m" style="background:rgba(255,82,82,.3)"></div></td><td><div class="sc-m" style="background:rgba(62,207,142,.2)"></div></td><td><div class="sc-m" style="background:rgba(62,207,142,.2)"></div></td><td><div class="sc-m" style="background:rgba(62,207,142,.2)"></div></td><td><div class="sc-m" style="background:rgba(62,207,142,.2)"></div></td></tr>
+                  <tr><td style="font-size:10px;font-weight:600;padding:3px 0">Tanzania</td><td><div class="sc-m" style="background:rgba(62,207,142,.3)"></div></td><td><div class="sc-m" style="background:rgba(62,207,142,.3)"></div></td><td><div class="sc-m" style="background:rgba(62,207,142,.4)"></div></td><td><div class="sc-m" style="background:rgba(62,207,142,.2)"></div></td><td><div class="sc-m" style="background:rgba(255,82,82,.2)"></div></td><td><div class="sc-m" style="background:rgba(255,82,82,.35)"></div></td><td><div class="sc-m" style="background:rgba(255,82,82,.3)"></div></td><td><div class="sc-m" style="background:rgba(62,207,142,.2)"></div></td><td><div class="sc-m" style="background:rgba(62,207,142,.2)"></div></td><td><div class="sc-m" style="background:rgba(62,207,142,.3)"></div></td><td><div class="sc-m" style="background:rgba(62,207,142,.3)"></div></td><td><div class="sc-m" style="background:rgba(62,207,142,.2)"></div></td></tr>
+                </tbody>
+              </table>
+              <div style="display:flex;gap:10px;margin-top:7px;font-size:9px"><span style="color:var(--coral)">■ Scarcity</span><span style="color:var(--green)">■ Harvest/Supply</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ PAGE: AI RECOMMENDATIONS ══════════ -->
+      <div class="page" id="pg-ai">
+        <div class="row mb11">
+          <div class="f1 card" style="display:flex;align-items:center;gap:14px;padding:12px 16px">
+            <div style="font-size:30px">🤖</div>
+            <div><div style="font-size:14px;font-weight:700">AATIP Intelligence Engine</div><div style="font-size:11px;color:var(--t1)">Claude-powered market analysis · Updated 2h ago · 532 corridor-months analysed · All 6 engines active</div></div>
+            <div style="margin-left:auto"><span class="b bt">AI Active</span></div>
+          </div>
+        </div>
+        <div class="row" style="align-items:flex-start">
+          <div class="f2">
+            <div class="st">Intelligence Insights — May 2026</div>
+            <div class="ai-c ai-hi">
+              <div class="ai-hd"><div class="ai-t">🔺 Urgent: Kenya Maize Supply Gap — Immediate Action Window</div><div class="ai-sc">Score 9.2/10</div></div>
+              <div class="ai-tx">Kenya's pre-harvest scarcity (June–August 2026) coincides with a confirmed supply shock in Southern Zambia. However, Northern Zambia and Tanzania maintain surplus positions. MIS on TAN→KEN stands at 0.212, indicating a clear arbitrage opportunity of $0.058/kg net of transport. The Dar es Salaam–Nairobi corridor via Arusha (700km, $0.062/kg) is the most cost-efficient route. Estimated trade window: 180,000–240,000 tonnes over the 3-month period at current price spreads.</div>
+              <div class="ai-tags"><span class="ai-tag">Pre-harvest risk</span><span class="ai-tag">Active arbitrage</span><span class="ai-tag">TAN→KEN</span><span class="ai-tag">Maize</span><span class="ai-tag">June–August 2026</span><span class="ai-tag">High confidence</span></div>
+            </div>
+            <div class="ai-c ai-md">
+              <div class="ai-hd"><div class="ai-t">📊 Informal Trade Formalization Opportunity: TAN↔KEN Corridor</div><div class="ai-sc">Score 7.8/10</div></div>
+              <div class="ai-tx">TAN→KEN shows the highest informal trade probability in the system at P=0.385, with estimated informal volumes of 87Mt over the observation period — substantially exceeding formal recorded flows. Establishing certified trader registration and single-window customs on this corridor could bring an estimated 30–40% of informal flows into formal channels, generating $280M–$400M in additional recorded trade value and associated fiscal revenue for both countries.</div>
+              <div class="ai-tags"><span class="ai-tag">Informal trade</span><span class="ai-tag">Policy opportunity</span><span class="ai-tag">TAN→KEN</span><span class="ai-tag">Formalization</span><span class="ai-tag">$400M upside</span></div>
+            </div>
+            <div class="ai-c ai-lo">
+              <div class="ai-hd"><div class="ai-t">🌱 ZAM→TAN Emerging Window: 6-Month Forward Signal Positive</div><div class="ai-sc">Score 6.5/10</div></div>
+              <div class="ai-tx">ZAM→TAN is the only corridor with a positive 6-month Forward MIS projection (+0.057). Currently near-equilibrium (current MIS = −0.091), price divergence trajectory suggests a trade window opening in Q3 2026, driven by seasonal harvest patterns in Zambia and growing Tanzanian demand for processed grain products. Recommended action: pre-position logistics capacity and negotiate trader agreements now to capitalize on the emerging window before formal competitors enter.</div>
+              <div class="ai-tags"><span class="ai-tag">Forward MIS</span><span class="ai-tag">Emerging</span><span class="ai-tag">ZAM→TAN</span><span class="ai-tag">Q3 2026</span><span class="ai-tag">Logistics prep</span></div>
+            </div>
+            <div class="ai-c ai-md">
+              <div class="ai-hd"><div class="ai-t">⚙️ AfCFTA Phase 1: Highest ROI Border Posts for Investment</div><div class="ai-sc">Score 8.4/10</div></div>
+              <div class="ai-tx">Simulation identifies ZAM→KEN and TAN→KEN as the highest-impact corridors for Phase 1 border reduction (−20%). Combined, these account for $1.3B of the $2.8B Phase 1 estimate. Policy recommendation: prioritize single-window customs at Nakuru and Namanga border posts, which handle the majority of formal maize trade. Expected impact: 10 months newly unlocked for ZAM→KEN, 2 months for TAN→KEN — 847 total corridor-months across the full network.</div>
+              <div class="ai-tags"><span class="ai-tag">AfCFTA Phase 1</span><span class="ai-tag">Border reform</span><span class="ai-tag">Policy</span><span class="ai-tag">$1.3B impact</span><span class="ai-tag">Cross-validated corr=1.000</span></div>
+            </div>
+          </div>
+          <div class="f1" style="display:flex;flex-direction:column;gap:10px">
+            <div class="card">
+              <div class="st">Recommended Corridors</div>
+              <div class="mb11"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><div style="font-size:12px;font-weight:700">1. TAN → KEN</div><div class="b bc">Urgent</div></div><div style="font-size:11px;color:var(--t1)">Score 9.2 · MIS 0.212 · Active arb · 61/74 months</div><div class="pb mt8"><div class="pf" style="width:92%;background:var(--coral)"></div></div></div>
+              <div class="mb11"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><div style="font-size:12px;font-weight:700">2. ZAM → KEN</div><div class="b ba">High</div></div><div style="font-size:11px;color:var(--t1)">Score 7.8 · MIS 0.062 · Policy target</div><div class="pb mt8"><div class="pf" style="width:78%;background:var(--amber)"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><div style="font-size:12px;font-weight:700">3. ZAM → TAN (forward)</div><div class="b bt">Watch</div></div><div style="font-size:11px;color:var(--t1)">Score 6.5 · FwdMIS +0.057 · Q3 window</div><div class="pb mt8"><div class="pf" style="width:65%;background:var(--teal)"></div></div></div>
+            </div>
+            <div class="card">
+              <div class="st">Stakeholder Actions</div>
+              <div class="mtb" id="stTabs">
+                <div class="mt on" onclick="stTab(this,'g')">Government</div>
+                <div class="mt" onclick="stTab(this,'b')">Business</div>
+                <div class="mt" onclick="stTab(this,'d')">Dev. Inst.</div>
+              </div>
+              <div id="st-g">
+                <div class="csm mb11"><div style="font-size:11px;font-weight:700;margin-bottom:3px">Priority: Single-window customs on A109</div><div style="font-size:10px;color:var(--t1)">−20% border friction → $900M incremental trade</div></div>
+                <div class="csm mb11"><div style="font-size:11px;font-weight:700;margin-bottom:3px">Activate TAN→KEN emergency corridor</div><div style="font-size:10px;color:var(--t1)">Kenya pre-harvest scarcity July–August 2026</div></div>
+                <div class="csm"><div style="font-size:11px;font-weight:700;margin-bottom:3px">Formalize TAN↔KEN informal trade</div><div style="font-size:10px;color:var(--t1)">P=0.385 signal · $280M–$400M fiscal upside</div></div>
+              </div>
+              <div id="st-b" style="display:none">
+                <div class="csm mb11"><div style="font-size:11px;font-weight:700;margin-bottom:3px">Source: Northern Zambia harvest (avoid South)</div><div style="font-size:10px;color:var(--t1)">$0.234/kg → sell Nairobi $0.381/kg</div></div>
+                <div class="csm mb11"><div style="font-size:11px;font-weight:700;margin-bottom:3px">Book logistics: Dar → Nairobi A109 corridor</div><div style="font-size:10px;color:var(--t1)">$0.062/kg transport · Net margin $0.058/kg</div></div>
+                <div class="csm"><div style="font-size:11px;font-weight:700;margin-bottom:3px">Pre-position: ZAM→TAN Q3 window</div><div style="font-size:10px;color:var(--t1)">Forward MIS +0.057 · First-mover advantage</div></div>
+              </div>
+              <div id="st-d" style="display:none">
+                <div class="csm mb11"><div style="font-size:11px;font-weight:700;margin-bottom:3px">Infrastructure ROI: Arusha–Nairobi highway</div><div style="font-size:10px;color:var(--t1)">$120M invest → $900M/yr trade unlock</div></div>
+                <div class="csm mb11"><div style="font-size:11px;font-weight:700;margin-bottom:3px">Food security funding: Kenya deficit window</div><div style="font-size:10px;color:var(--t1)">Severity 0.84 · June–August critical</div></div>
+                <div class="csm"><div style="font-size:11px;font-weight:700;margin-bottom:3px">AfCFTA Phase 1 implementation support</div><div style="font-size:10px;color:var(--t1)">$2.8B trade value · 17 months unlocked</div></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="st">AI Model Confidence</div>
+              <div class="sr"><div class="sr-lb">Supply Classifier (Deficit Recall)</div><div class="sr-tr"><div class="sr-fi" style="width:100%;background:var(--green)"></div></div><div class="sr-v">1.00</div></div>
+              <div class="sr"><div class="sr-lb">Price Forecast MAPE</div><div class="sr-tr"><div class="sr-fi" style="width:90%;background:var(--teal)"></div></div><div class="sr-v">0.90</div></div>
+              <div class="sr"><div class="sr-lb">Trade Matching (Spearman ρ)</div><div class="sr-tr"><div class="sr-fi" style="width:77%;background:var(--amber)"></div></div><div class="sr-v">0.77</div></div>
+              <div class="sr" style="margin:0"><div class="sr-lb">Policy Simulation (Corr)</div><div class="sr-tr"><div class="sr-fi" style="width:100%;background:var(--green)"></div></div><div class="sr-v">1.00</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ PAGE: SUPPLY CHAIN ══════════ -->
+      <div class="page" id="pg-supply">
+        <div class="g4 mb11">
+          <div class="kpi"><div class="kpi-lb">Surplus Regions</div><div class="kpi-v" style="color:var(--green)">18</div><div class="kpi-ch pos">Of 54 countries monitored</div></div>
+          <div class="kpi"><div class="kpi-lb">Deficit Regions</div><div class="kpi-v" style="color:var(--coral)">12</div><div class="kpi-ch neg">Active food security risk</div></div>
+          <div class="kpi"><div class="kpi-lb">Informal Volume Est.</div><div class="kpi-v" style="color:var(--purple)">87Mt</div><div class="kpi-ch neu">UNCTAD-calibrated mid</div></div>
+          <div class="kpi"><div class="kpi-lb">Supply Confidence</div><div class="kpi-v" style="color:var(--amber)">0.74</div><div class="kpi-ch pos">Top corridor average</div></div>
+        </div>
+        <div class="row">
+          <div class="f2 card">
+            <div class="st">Supply Status by Country — Maize</div>
+            <table class="dt">
+              <thead><tr><th>Country</th><th>Status</th><th>Net Supply (kt)</th><th>Supply Shock Z</th><th>Deficit Warning</th><th>Climate Risk</th></tr></thead>
+              <tbody>
+                <tr><td style="font-weight:600">Zambia</td><td><span class="b bg">Surplus</span></td><td style="font-family:var(--mono)">+3,420</td><td style="font-family:var(--mono);color:var(--green)">−0.3</td><td><span class="b bg">Low</span></td><td>0.21</td></tr>
+                <tr><td style="font-weight:600">Tanzania</td><td><span class="b bt">Surplus</span></td><td style="font-family:var(--mono)">+2,180</td><td style="font-family:var(--mono);color:var(--green)">−0.1</td><td><span class="b bg">Low</span></td><td>0.18</td></tr>
+                <tr><td style="font-weight:600">Kenya</td><td><span class="b bc">Deficit</span></td><td style="font-family:var(--mono);color:var(--coral)">−1,840</td><td style="font-family:var(--mono);color:var(--coral)">+2.1</td><td><span class="b bc">High</span></td><td>0.62</td></tr>
+                <tr><td style="font-weight:600">Uganda</td><td><span class="b bt">Surplus</span></td><td style="font-family:var(--mono)">+920</td><td style="font-family:var(--mono)">+0.2</td><td><span class="b bg">Low</span></td><td>0.15</td></tr>
+                <tr><td style="font-weight:600">Zimbabwe</td><td><span class="b bg">Surplus</span></td><td style="font-family:var(--mono)">+640</td><td style="font-family:var(--mono)">−0.4</td><td><span class="b bg">Low</span></td><td>0.31</td></tr>
+                <tr><td style="font-weight:600">Ethiopia</td><td><span class="b ba">Neutral</span></td><td style="font-family:var(--mono);color:var(--amber)">−210</td><td style="font-family:var(--mono);color:var(--amber)">+1.2</td><td><span class="b ba">Medium</span></td><td>0.48</td></tr>
+                <tr><td style="font-weight:600">DRC</td><td><span class="b bc">Deficit</span></td><td style="font-family:var(--mono);color:var(--coral)">−2,100</td><td style="font-family:var(--mono);color:var(--coral)">+1.8</td><td><span class="b bc">High</span></td><td>0.55</td></tr>
+                <tr><td style="font-weight:600">South Africa</td><td><span class="b bg">Surplus</span></td><td style="font-family:var(--mono)">+4,810</td><td style="font-family:var(--mono)">−0.2</td><td><span class="b bg">Low</span></td><td>0.22</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="f1" style="display:flex;flex-direction:column;gap:10px">
+            <div class="card">
+              <div class="st">Feature Importance — Supply Classifier</div>
+              <div class="sr"><div class="sr-lb" style="font-size:11px">Production YoY Growth</div><div class="sr-tr"><div class="sr-fi" style="width:93%;background:var(--teal)"></div></div><div class="sr-v">0.24</div></div>
+              <div class="sr"><div class="sr-lb" style="font-size:11px">Supply Shock Z</div><div class="sr-tr"><div class="sr-fi" style="width:62%;background:var(--teal)"></div></div><div class="sr-v">0.16</div></div>
+              <div class="sr"><div class="sr-lb" style="font-size:11px">Net Supply (tonnes)</div><div class="sr-tr"><div class="sr-fi" style="width:55%;background:var(--amber)"></div></div><div class="sr-v">0.14</div></div>
+              <div class="sr"><div class="sr-lb" style="font-size:11px">Supply Index</div><div class="sr-tr"><div class="sr-fi" style="width:51%;background:var(--amber)"></div></div><div class="sr-v">0.13</div></div>
+              <div class="sr"><div class="sr-lb" style="font-size:11px">Yield (hg/ha)</div><div class="sr-tr"><div class="sr-fi" style="width:36%;background:var(--blue)"></div></div><div class="sr-v">0.09</div></div>
+              <div class="sr" style="margin:0"><div class="sr-lb" style="font-size:11px">Export Intensity</div><div class="sr-tr"><div class="sr-fi" style="width:30%;background:var(--blue)"></div></div><div class="sr-v">0.08</div></div>
+            </div>
+            <div class="card">
+              <div class="st">Climate Risk Feed</div>
+              <div class="alert a-hi" style="margin-bottom:6px"><div class="a-ic">🌩</div><div><div class="a-title" style="font-size:11px;color:var(--coral)">Zambia Southern — Drought Signal</div><div class="a-body">Rainfall anomaly z = −1.8σ · Export capacity at risk · Northern Zambia unaffected</div></div></div>
+              <div class="alert a-md" style="margin:0"><div class="a-ic">🌡</div><div><div class="a-title" style="font-size:11px;color:var(--amber)">Kenya — Heat Stress Elevated</div><div class="a-body">NDVI decline detected · Yield risk +15% · Pre-harvest scarcity compounding</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ PAGE: TRADE NETWORK ══════════ -->
+      <div class="page" id="pg-network">
+        <div class="g4 mb11">
+          <div class="kpi"><div class="kpi-lb">Network Nodes</div><div class="kpi-v" style="color:var(--blue)">54</div><div class="kpi-ch pos">All AU member countries</div></div>
+          <div class="kpi"><div class="kpi-lb">Active Edges</div><div class="kpi-v" style="color:var(--teal)">847</div><div class="kpi-ch pos">Trade corridor connections</div></div>
+          <div class="kpi"><div class="kpi-lb">Network Density</div><div class="kpi-v" style="color:var(--amber)">0.31</div><div class="kpi-ch neu">Low · High integration potential</div></div>
+          <div class="kpi"><div class="kpi-lb">Hub Countries</div><div class="kpi-v" style="color:var(--purple)">8</div><div class="kpi-ch neu">High betweenness centrality</div></div>
+        </div>
+        <div class="row">
+          <div class="f2 card">
+            <div class="st">Trade Network Graph · Maize <span style="font-size:10px;color:var(--t2)">Node size ∝ production capacity · Edge weight ∝ Trade Score</span></div>
+            <svg viewBox="0 0 600 300" width="100%" height="280" style="display:block">
+              <defs>
+                <marker id="nA" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5Z" fill="var(--amber)" opacity=".8"/></marker>
+                <marker id="nG" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5Z" fill="var(--teal)" opacity=".8"/></marker>
+                <marker id="nB" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5Z" fill="var(--green)" opacity=".7"/></marker>
+              </defs>
+              <!-- Nodes -->
+              <circle cx="280" cy="250" r="20" fill="rgba(62,207,142,.2)" stroke="var(--green)" stroke-width="1.5"/>
+              <text x="280" y="253" text-anchor="middle" fill="var(--t0)" font-size="9" font-family="-apple-system" font-weight="600">S.Africa</text>
+              <circle cx="200" cy="175" r="18" fill="rgba(0,201,167,.2)" stroke="var(--teal)" stroke-width="1.5"/>
+              <text x="200" y="178" text-anchor="middle" fill="var(--t0)" font-size="9" font-family="-apple-system" font-weight="600">Zambia</text>
+              <circle cx="340" cy="148" r="16" fill="rgba(62,207,142,.18)" stroke="var(--green)" stroke-width="1.5"/>
+              <text x="340" y="151" text-anchor="middle" fill="var(--t0)" font-size="9" font-family="-apple-system" font-weight="600">Tanzania</text>
+              <circle cx="430" cy="110" r="14" fill="rgba(255,82,82,.2)" stroke="var(--coral)" stroke-width="1.5"/>
+              <text x="430" y="113" text-anchor="middle" fill="var(--t0)" font-size="9" font-family="-apple-system" font-weight="600">Kenya</text>
+              <circle cx="95" cy="115" r="17" fill="rgba(245,166,35,.18)" stroke="var(--amber)" stroke-width="1.5"/>
+              <text x="95" y="118" text-anchor="middle" fill="var(--t0)" font-size="9" font-family="-apple-system" font-weight="600">Nigeria</text>
+              <circle cx="480" cy="185" r="12" fill="rgba(245,166,35,.15)" stroke="var(--amber)" stroke-width="1"/>
+              <text x="480" y="188" text-anchor="middle" fill="var(--t1)" font-size="8" font-family="-apple-system">Ethiopia</text>
+              <circle cx="365" cy="82" r="10" fill="rgba(62,207,142,.12)" stroke="var(--green)" stroke-width="1"/>
+              <text x="365" y="85" text-anchor="middle" fill="var(--t1)" font-size="8" font-family="-apple-system">Uganda</text>
+              <circle cx="120" cy="178" r="11" fill="rgba(62,207,142,.12)" stroke="var(--green)" stroke-width="1"/>
+              <text x="120" y="181" text-anchor="middle" fill="var(--t1)" font-size="8" font-family="-apple-system">Ghana</text>
+              <circle cx="295" cy="215" r="9" fill="rgba(62,207,142,.12)" stroke="var(--green)" stroke-width="1"/>
+              <text x="295" y="218" text-anchor="middle" fill="var(--t1)" font-size="8" font-family="-apple-system">Zimbabwe</text>
+              <circle cx="370" cy="238" r="8" fill="rgba(74,158,224,.15)" stroke="var(--blue)" stroke-width="1"/>
+              <text x="370" y="241" text-anchor="middle" fill="var(--t1)" font-size="8" font-family="-apple-system">Mozambique</text>
+              <!-- Strong edges -->
+              <line x1="340" y1="148" x2="430" y2="110" stroke="var(--amber)" stroke-width="3" opacity=".75" marker-end="url(#nA)"/>
+              <line x1="200" y1="175" x2="430" y2="110" stroke="var(--teal)" stroke-width="2.2" opacity=".7" marker-end="url(#nG)"/>
+              <line x1="200" y1="175" x2="340" y2="148" stroke="var(--teal)" stroke-width="1.6" opacity=".6" marker-end="url(#nG)"/>
+              <!-- Medium -->
+              <line x1="280" y1="250" x2="200" y2="175" stroke="var(--green)" stroke-width="1.4" opacity=".45" marker-end="url(#nB)"/>
+              <line x1="280" y1="250" x2="370" y2="238" stroke="var(--green)" stroke-width="1.2" opacity=".35" marker-end="url(#nB)"/>
+              <line x1="200" y1="175" x2="295" y2="215" stroke="var(--teal)" stroke-width="1.2" opacity=".35" marker-end="url(#nG)"/>
+              <line x1="120" y1="178" x2="95" y2="115" stroke="var(--amber)" stroke-width="1.4" opacity=".4" marker-end="url(#nA)"/>
+              <line x1="340" y1="148" x2="365" y2="82" stroke="var(--green)" stroke-width="1" opacity=".3" marker-end="url(#nB)"/>
+              <line x1="430" y1="110" x2="480" y2="185" stroke="var(--amber)" stroke-width="1" opacity=".3" marker-end="url(#nA)"/>
+              <!-- Labels -->
+              <text x="388" y="132" fill="var(--amber)" font-size="8" font-family="-apple-system" opacity=".8">MIS 0.21</text>
+              <text x="295" y="130" fill="var(--teal)" font-size="8" font-family="-apple-system" opacity=".8">MIS 0.06</text>
+              <!-- Legend -->
+              <rect x="8" y="8" width="155" height="68" rx="5" fill="rgba(9,15,22,.85)" stroke="rgba(255,255,255,.1)" stroke-width=".5"/>
+              <text x="16" y="24" fill="var(--t2)" font-size="8.5" font-family="-apple-system">Node size = production capacity</text>
+              <line x1="16" y1="36" x2="44" y2="36" stroke="var(--amber)" stroke-width="3"/>
+              <text x="50" y="40" fill="var(--t2)" font-size="8.5" font-family="-apple-system">High MIS corridor</text>
+              <line x1="16" y1="50" x2="44" y2="50" stroke="var(--teal)" stroke-width="1.5"/>
+              <text x="50" y="54" fill="var(--t2)" font-size="8.5" font-family="-apple-system">Active corridor</text>
+              <circle cx="23" cy="64" r="5" fill="rgba(255,82,82,.2)" stroke="var(--coral)" stroke-width="1"/>
+              <text x="35" y="68" fill="var(--t2)" font-size="8.5" font-family="-apple-system">Deficit country</text>
+            </svg>
+          </div>
+          <div class="f1" style="display:flex;flex-direction:column;gap:10px">
+            <div class="card">
+              <div class="st">Hub Countries by Degree</div>
+              <table class="dt" style="font-size:11px">
+                <thead><tr><th>Country</th><th>Degree</th><th>Role</th></tr></thead>
+                <tbody>
+                  <tr><td style="font-weight:600">South Africa</td><td>18</td><td><span class="b bg">Hub Exporter</span></td></tr>
+                  <tr><td style="font-weight:600">Tanzania</td><td>14</td><td><span class="b bt">Transit Hub</span></td></tr>
+                  <tr><td style="font-weight:600">Nigeria</td><td>12</td><td><span class="b ba">Regional Hub</span></td></tr>
+                  <tr><td style="font-weight:600">Kenya</td><td>11</td><td><span class="b bc">Deficit Hub</span></td></tr>
+                  <tr><td style="font-weight:600">Zambia</td><td>10</td><td><span class="b bt">Supplier</span></td></tr>
+                  <tr><td style="font-weight:600">Ethiopia</td><td>9</td><td><span class="b ba">Consumer</span></td></tr>
+                  <tr><td style="font-weight:600">Ghana</td><td>8</td><td><span class="b bb">Regional</span></td></tr>
+                  <tr><td style="font-weight:600">DRC</td><td>7</td><td><span class="b bc">Critical</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card">
+              <div class="st">Network Integration Metrics</div>
+              <div class="sr"><div class="sr-lb">Overall integration</div><div class="sr-tr"><div class="sr-fi" style="width:42%;background:var(--amber)"></div></div><div class="sr-v">42%</div></div>
+              <div class="sr"><div class="sr-lb">East Africa cluster</div><div class="sr-tr"><div class="sr-fi" style="width:71%;background:var(--teal)"></div></div><div class="sr-v">71%</div></div>
+              <div class="sr"><div class="sr-lb">West Africa cluster</div><div class="sr-tr"><div class="sr-fi" style="width:54%;background:var(--amber)"></div></div><div class="sr-v">54%</div></div>
+              <div class="sr" style="margin:0"><div class="sr-lb">North–South linkage</div><div class="sr-tr"><div class="sr-fi" style="width:22%;background:var(--coral)"></div></div><div class="sr-v" style="color:var(--coral)">22%</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /app-body -->
+</div><!-- /mainApp -->
+
+<script>
+// ── TICKER DATA ──
+const TK=[
+  {s:'MAIZE·KEN',p:'0.381',c:'+4.1%',u:true},{s:'MAIZE·TZA',p:'0.261',c:'−1.2%',u:false},
+  {s:'MAIZE·ZMB',p:'0.234',c:'−0.5%',u:false},{s:'WHEAT·EGY',p:'0.412',c:'+1.8%',u:true},
+  {s:'RICE·NGA',p:'0.528',c:'+3.2%',u:true},{s:'COFFEE·ETH',p:'2.810',c:'+0.7%',u:true},
+  {s:'COCOA·GHA',p:'3.142',c:'−0.4%',u:false},{s:'SORGHUM·MLI',p:'0.198',c:'+2.1%',u:true},
+  {s:'CASSAVA·DRC',p:'0.142',c:'−1.8%',u:false},{s:'SOYBEAN·ZAF',p:'0.489',c:'+2.6%',u:true},
+  {s:'GROUNDNUT·SEN',p:'0.821',c:'+0.9%',u:true},{s:'PLANTAIN·CMR',p:'0.612',c:'−0.6%',u:false},
+  {s:'RICE·ETH',p:'0.641',c:'+5.1%',u:true},{s:'WHEAT·MAR',p:'0.388',c:'+1.2%',u:true},
+  {s:'COCOA·CIV',p:'3.290',c:'+0.3%',u:true},{s:'MAIZE·UGA',p:'0.298',c:'+2.1%',u:true},
+];
+function buildT(id){
+  const d=[...TK,...TK];
+  document.getElementById(id).innerHTML=d.map(t=>
+    `<span class="ti"><span class="ti-sym">${t.s}</span><span class="ti-p">${t.p}</span><span class="${t.u?'up':'dn'}">${t.c}</span></span>`
+  ).join('');
+}
+buildT('lt'); buildT('mt');
+
+// ── STAKEHOLDER ──
+function setSt(el){document.querySelectorAll('.stake-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');}
+
+// ── LOGIN ──
+function login(){
+  const s=document.getElementById('loginScreen');
+  s.classList.add('out');
+  setTimeout(()=>{
+    s.style.display='none';
+    const a=document.getElementById('mainApp');
+    a.classList.add('on');
+    setTimeout(initCharts,80);
+  },550);
+}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('loginScreen').style.display!=='none')login();});
+
+// ── NAVIGATION ──
+const pageMeta={
+  dash:['Executive Dashboard','Continental AgriTrade Intelligence · Real-time · May 2026'],
+  map:['Continental Trade Map','54 Countries · 12 Commodities · Live Flows'],
+  corridors:['Corridor Explorer','Bilateral MIS Analysis · Econometrics · Routes'],
+  intel:['Market Intelligence','Live Price Feeds · Arbitrage Detection · Spreads'],
+  policy:['Policy Simulator','AfCFTA Scenario Analysis · Trade Impact Quantification'],
+  forecast:['Price & MIS Forecasting','6-Month Forward Intelligence · 90% CI'],
+  risk:['Risk & Early Warning','Food Security Alerts · Deficit Monitoring'],
+  ai:['AI Recommendations','Intelligence Engine · Stakeholder Action Plans'],
+  supply:['Supply Chain Monitor','Production · Deficit · Climate Intelligence'],
+  network:['Trade Network Map','54-Country Graph Analysis · Hub Detection'],
+};
+function go(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nav').forEach(n=>n.classList.remove('on'));
+  const pg=document.getElementById('pg-'+id);
+  if(pg)pg.classList.add('on');
+  el.classList.add('on');
+  const m=pageMeta[id]||['',''];
+  document.getElementById('pgT').textContent=m[0];
+  document.getElementById('pgS').textContent=m[1];
+}
+
+// ── COMMODITY CYCLE ──
+const COMMS=['🌽 Maize','🌾 Wheat','🍚 Rice','☕ Coffee','🍫 Cocoa','🫘 Soybean','🥜 Groundnut','🍠 Cassava'];
+let ci=0;
+function cycleComm(){ci=(ci+1)%COMMS.length;document.getElementById('cPill').textContent=COMMS[ci];}
+
+// ── POLICY SIMULATOR ──
+function upPol(){
+  const b=+document.getElementById('bS').value;
+  const t=+document.getElementById('tS').value;
+  const e=+document.getElementById('eS').value/10;
+  document.getElementById('bV').textContent=b+'%';
+  document.getElementById('tV').textContent=t+'%';
+  document.getElementById('eV').textContent=e.toFixed(1);
+  const lr=(b*.4+t*.6)/100;
+  const ti=Math.round(e*lr*1000)/10;
+  const vol=Math.round(92*ti/28.3)/10;
+  const val=Math.round(28*ti/28.3)/10;
+  const mo=Math.round(17*ti/28.3);
+  document.getElementById('pTI').textContent='+'+ti+'%';
+  document.getElementById('pTV').textContent=vol+'Mt';
+  document.getElementById('pTW').textContent='$'+val+'B';
+  document.getElementById('ysV').textContent=vol+'Mt';
+  document.getElementById('ysW').textContent='$'+val+'B';
+  document.getElementById('ysM').textContent=mo;
+}
+
+// ── STAKEHOLDER TABS ──
+function stTab(el,id){
+  document.querySelectorAll('#stTabs .mt').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  ['g','b','d'].forEach(k=>{const e=document.getElementById('st-'+k);if(e)e.style.display=k===id?'':'none';});
+}
+
+// ── CHARTS ──
+let cInit=false;
+function initCharts(){
+  if(cInit)return; cInit=true;
+  const gc='rgba(255,255,255,0.05)';
+  const tc='#3D5468';
+  const base={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{grid:{color:gc},ticks:{color:tc,font:{size:9}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:9}}}}};
+
+  // MIS Trend
+  const yrs=['2013','2014','2015','2016','2017','2018','2019','2020','2021','2022'];
+  const md=[0.18,0.22,0.25,0.31,0.19,0.28,0.21,0.15,0.24,0.18];
+  const ma=md.map((_,i)=>i<2?null:(md[i]+md[i-1]+md[i-2])/3);
+  new Chart(document.getElementById('cMisTrend'),{
+    type:'line',
+    data:{labels:yrs,datasets:[
+      {label:'MIS',data:md,borderColor:'#F5A623',backgroundColor:'rgba(245,166,35,0.07)',fill:true,tension:0.4,pointRadius:3,pointBackgroundColor:'#F5A623'},
+      {label:'3M MA',data:ma,borderColor:'#00C9A7',borderDash:[4,3],fill:false,tension:0.4,pointRadius:0},
+    ]},
+    options:{...base,plugins:{legend:{display:true,labels:{color:'#7A96B2',font:{size:10},usePointStyle:true}}}}
+  });
+
+  // Corridor MIS
+  const mo15=['J','F','M','A','M','J','J','A','S','O','N','D','J','F','M'];
+  const m2=[0.15,0.18,0.21,0.25,0.19,0.28,0.32,0.24,0.18,0.22,0.26,0.20,0.21,0.19,0.23];
+  new Chart(document.getElementById('cCorrMIS'),{
+    type:'line',
+    data:{labels:mo15,datasets:[
+      {label:'MIS',data:m2,borderColor:'#F5A623',backgroundColor:'rgba(245,166,35,0.09)',fill:true,tension:0.4,pointRadius:2},
+      {label:'Threshold',data:m2.map(()=>0),borderColor:'rgba(255,82,82,0.45)',borderDash:[3,3],fill:false,pointRadius:0},
+      {label:'Strong',data:m2.map(()=>0.5),borderColor:'rgba(245,166,35,0.35)',borderDash:[3,3],fill:false,pointRadius:0},
+    ]},
+    options:{...base,plugins:{legend:{display:true,labels:{color:'#7A96B2',font:{size:10},usePointStyle:true}}}}
+  });
+
+  // Price Compare
+  new Chart(document.getElementById('cPriceComp'),{
+    type:'line',
+    data:{labels:mo15,datasets:[
+      {label:'Tanzania',data:[.24,.25,.26,.23,.27,.29,.28,.26,.25,.24,.26,.27,.26,.25,.26],borderColor:'#3ECF8E',fill:false,tension:0.4,pointRadius:2},
+      {label:'Kenya',data:[.35,.37,.38,.36,.39,.41,.43,.38,.37,.36,.38,.40,.38,.37,.38],borderColor:'#FF5252',fill:false,tension:0.4,pointRadius:2},
+    ]},
+    options:{...base,plugins:{legend:{display:true,labels:{color:'#7A96B2',font:{size:10},usePointStyle:true}}}}
+  });
+
+  // Policy
+  new Chart(document.getElementById('cPolicy'),{
+    type:'bar',
+    data:{labels:['Baseline','AfCFTA Phase 1','AfCFTA Full','Custom'],
+      datasets:[{label:'Volume Mt',data:[0,9.2,30.3,9.2],backgroundColor:['#1A2840','#F5A623','#00C9A7','#9B74E0'],borderRadius:5}]},
+    options:{...base,scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:10}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:9}},title:{display:true,text:'Mt',color:tc,font:{size:9}}}}}
+  });
+
+  // Corridor Impact
+  const corrs=['TAN→KEN','ZAM→KEN','ZAM→TAN','KEN→TAN','KEN→ZAM','TAN→ZAM'];
+  new Chart(document.getElementById('cCorrImpact'),{
+    type:'bar',
+    data:{labels:corrs,datasets:[
+      {label:'Current MIS',data:[.212,.062,-.091,-.184,-.227,-.040],backgroundColor:'#1A2840',borderRadius:3},
+      {label:'After Policy',data:[.095,-.002,-.182,-.249,-.295,-.108],backgroundColor:'#00C9A7',borderRadius:3},
+    ]},
+    options:{...base,plugins:{legend:{display:true,labels:{color:'#7A96B2',font:{size:10},usePointStyle:true}}},
+      scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:9}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:9}}}}}
+  });
+
+  // Forecast
+  const flb=['Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov'];
+  const hst=[.352,.361,.368,.374,.379,.381,null,null,null,null,null,null,null];
+  const fst=[null,null,null,null,null,.381,.386,.391,.394,.388,.382,.378,.375];
+  const cu=flb.map((_,i)=>fst[i]!=null?fst[i]+(0.016+i*.003):null);
+  const cl=flb.map((_,i)=>fst[i]!=null?fst[i]-(0.016+i*.003):null);
+  new Chart(document.getElementById('cForecast'),{
+    type:'line',
+    data:{labels:flb,datasets:[
+      {label:'Historical',data:hst,borderColor:'#4A9EE0',fill:false,tension:0.4,pointRadius:2},
+      {label:'Forecast',data:fst,borderColor:'#F5A623',borderDash:[5,3],fill:false,tension:0.4,pointRadius:2},
+      {label:'CI Upper',data:cu,borderColor:'transparent',backgroundColor:'rgba(245,166,35,0.1)',fill:'+1',tension:0.4,pointRadius:0},
+      {label:'CI Lower',data:cl,borderColor:'transparent',fill:false,tension:0.4,pointRadius:0},
+    ]},
+    options:{...base,plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:gc},ticks:{color:tc,font:{size:9}}},
+        y:{grid:{color:gc},ticks:{color:tc,font:{size:9}},min:.33,max:.43,title:{display:true,text:'USD/kg',color:tc,font:{size:9}}}}}
+  });
+}
+</script>
+</body>
+</html>

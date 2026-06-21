@@ -1,0 +1,12 @@
+{
+  "engine": "06_validation_econometrics",
+  "methods": [
+    "Engle-Granger cointegration (OLS residual ADF test)",
+    "Granger causality (F-test: restricted vs unrestricted AR)",
+    "Price transmission beta (OLS on first differences)",
+    "ECM residual diagnostics (ADF + half-life estimation)",
+    "All-engine prediction validation against held-out test set"
+  ],
+  "implementation_note": "Pure numpy/scipy \u2014 no statsmodels dependency",
+  "adf_note": "ADF critical value approximated at -2.86 (5%) \u2014 conservative for n>25"
+}

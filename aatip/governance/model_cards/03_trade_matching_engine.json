@@ -1,0 +1,20 @@
+{
+  "engine": "03_trade_matching_engine",
+  "layer_hierarchy": [
+    "Layer 1: Economic composite (floor) \u2014 WB elasticity weights",
+    "Layer 2: LassoCV refinement (ranking) \u2014 temporal CV, log-transform target",
+    "Layer 3: Hard rule gates (filters) \u2014 override layers 1 and 2"
+  ],
+  "final_score_blend": "0.60 \u00d7 Econ + 0.40 \u00d7 ML",
+  "economic_weights": {
+    "MIS_MA3": 0.35,
+    "Supply_Confidence": 0.3,
+    "Route_Feasibility": 0.2,
+    "Market_Friction_Index": "-0.15"
+  },
+  "hard_gates": {
+    "Route_Feasibility": ">= 0.3",
+    "Market_Friction_Index": "<= 0.8"
+  },
+  "top_n": 3
+}

@@ -1,0 +1,59 @@
+{
+  "engine": "02_market_dynamics_engine",
+  "models": [
+    "AR(p)_via_LinearRegression",
+    "GradientBoostingRegressor"
+  ],
+  "primary_output": "Forward_MIS (1\u20136 month horizon per corridor)",
+  "secondary_output": "Price forecasts with 90% CI",
+  "forecast_horizon_months": 6,
+  "ar_lags": [
+    1,
+    2,
+    3,
+    6,
+    12
+  ],
+  "ecm_as_feature": true,
+  "ci_formula": "\u00b11.64 \u00d7 12M_price_std \u00d7 sqrt(horizon)",
+  "countries": [
+    "Kenya",
+    "Tanzania",
+    "Zambia"
+  ],
+  "country_models": {
+    "Kenya": {
+      "ar_differencing": 0,
+      "ar_metrics": {
+        "mape": 0.10391,
+        "rmse": 0.03717,
+        "directional_acc": 0.1667,
+        "n": 19,
+        "context": "AR-Kenya-val"
+      },
+      "gbr_metrics": {}
+    },
+    "Tanzania": {
+      "ar_differencing": 1,
+      "ar_metrics": {
+        "mape": 1.18048,
+        "rmse": 0.02888,
+        "directional_acc": 0.3846,
+        "n": 14,
+        "context": "AR-Tanzania-val"
+      },
+      "gbr_metrics": {
+        "mape": 0.08425,
+        "rmse": 0.03074,
+        "directional_acc": 0.5714,
+        "n": 8,
+        "context": "GBR-Tanzania-test"
+      }
+    }
+  },
+  "assumptions": [
+    "Trend dampening: price \u00d7 (1 + trend \u00d7 sqrt(h)) to prevent divergence",
+    "ECM_Residual included where non-null \u2014 adds mean-reversion signal",
+    "Non-stationary series first-differenced before AR fitting"
+  ]
+}
