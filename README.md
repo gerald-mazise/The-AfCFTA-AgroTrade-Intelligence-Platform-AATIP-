@@ -20,8 +20,6 @@ Kenya · Tanzania · Zambia · 6 Corridors · 2013–2022
 
 ---
 
----
-
 # Platform Identity
 
 <p align="center">
@@ -90,7 +88,7 @@ Data Intelligence • Trade Intelligence • Policy Intelligence • Food Securi
 | 🤖 AI Decision Support | Generate explainable recommendations for decision makers |
 
 ---
----
+
 # Platform Screenshots
 
 ## Executive Dashboard
