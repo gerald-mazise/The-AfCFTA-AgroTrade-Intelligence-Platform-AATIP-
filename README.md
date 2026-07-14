@@ -20,6 +20,77 @@ Kenya · Tanzania · Zambia · 6 Corridors · 2013–2022
 
 ---
 
+---
+
+# Platform Identity
+
+<p align="center">
+
+<img src="branding/AATIP_Primary_Logo_White_Background_HD.png" width="280">
+
+</p>
+
+<p align="center">
+
+<b>Artificial Intelligence for Africa's Agricultural Future</b>
+
+</p>
+
+<p align="center">
+
+Data Intelligence • Trade Intelligence • Policy Intelligence • Food Security
+
+</p>
+
+---
+
+# AATIP Brand Showcase
+
+<p align="center">
+
+<img src="branding/AATIP_Hero_Banner_AfCFTA_AgroTrade_HD.png">
+
+</p>
+
+> **AATIP transforms fragmented agricultural market data into actionable trade intelligence for governments, development partners, agribusinesses, researchers, and regional economic communities across Africa.**
+
+---
+
+# Brand Assets
+
+| Logo | Hero Banner |
+|------|-------------|
+| <img src="branding/AATIP_Primary_Logo_White_Background_HD.png" width="220"> | <img src="branding/AATIP_Hero_Banner_AfCFTA_AgroTrade_HD.png"> |
+
+---
+
+# Vision
+
+<p align="center">
+
+**One African Market.**
+
+**Connected by Intelligence.**
+
+**Powered by AI.**
+
+</p>
+
+---
+
+# Platform at a Glance
+
+| Capability | Description |
+|------------|-------------|
+| 📊 Market Intelligence | Detect emerging supply-demand imbalances |
+| 📈 Price Forecasting | Forecast commodity prices and Market Inefficiency Scores |
+| 🌍 Trade Corridor Matching | Recommend optimal intra-African trade routes |
+| 🚛 Informal Trade Estimation | Estimate hidden cross-border commodity flows |
+| 🏛 Policy Simulation | Quantify impacts of AfCFTA policy scenarios |
+| 🤖 AI Decision Support | Generate explainable recommendations for decision makers |
+
+---
+---
 # Platform Screenshots
 
 ## Executive Dashboard
