@@ -443,7 +443,17 @@ If you use this work in research or institutional contexts:
 ```
 
 ---
+# Branding Gallery
 
+<p align="center">
+
+<img src="branding/AATIP_Social_Post_Intelligence_Drives_Trade_HD.png" width="31%">
+<img src="branding/AATIP_Social_Post_Smarter_Data_Stronger_Trade_HD.png" width="31%">
+<img src="branding/AATIP_Promotional_Banner_Trade_That_Transforms_HD.png" width="31%">
+
+</p>
+
+---
 ## License
 
 Copyright © 2026 Gerald T. Mazise
